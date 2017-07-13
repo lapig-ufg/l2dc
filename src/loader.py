@@ -3,6 +3,7 @@ import modules
 import datasources
 import config
 from communication import Bus
+import sqlite3
 
 instances = {}
 
@@ -19,7 +20,7 @@ def getModules():
 
 	return modules
 
-def getDatasource(datasourceName, userParams):
+def getDatasource(datasourceName, userParams): 
 	typeName = 'datasources'
 	datasourceConfig = config.getItems(typeName, datasourceName)
 	datasourceConfig.update(userParams)
@@ -36,3 +37,14 @@ def getModule(moduleName):
 
 	moduleClass = getattr(modules, moduleName)
 	return moduleClass(moduleConfig)
+
+def getMetadataDb():
+	sitsConfig = config.getItems('sits', 'General')
+	
+	conn = sqlite3.connect(sitsConfig['path_metadata_db'])
+	conn.row_factory = sqlite3.Row
+	
+	conn.enable_load_extension(True)
+	conn.execute("SELECT load_extension('mod_spatialite');")
+
+	return conn.cursor()

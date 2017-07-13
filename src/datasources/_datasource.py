@@ -12,29 +12,13 @@ class Datasource:
 			setattr(self, key, config[key])
 
 		self.gridName = self.__class__.__name__.lower()
-		self.tiles = self.__getTiles()
+		cursor = loader.getMetadataDb();
 
-	def generateMessages(self):
+		lines = cursor.execute("SELECT utm_srid, asWkt(Geometry) as Geometry FROM wrs WHERE id = ?",('223071',))
+		rows = cursor.fetchall()
+		for row in rows:
+			print(row['utm_srid'], row['Geometry']);
 		
-		messages = [];
-
-		for date in self.__getDates():
-			message = Message()
-			
-			for attrName in dir(self):
-				value = getattr(self, attrName)
-				if not attrName.startswith('_') and not inspect.ismethod(value):
-					message.set(attrName, value)
-
-			message.set('start', date['start']);
-			message.set('end', date['end']);
-			message.set('tmpFiles', [])
-			message.set('startDoy', self.__getDayOfYear(date['start']).zfill(3) );
-			message.set('startYear', self.__getYear(date['start']) );
-
-			messages.append(message)
-
-		return messages
 
 	def __getYear(self, strDate):
 		return str(self.__convertDate(strDate).timetuple().tm_year)
@@ -56,50 +40,6 @@ class Datasource:
 			tiles.append(feature['properties']['TILES'])
 
 		return tiles
-		
-	def __getDates(self):
-		
-		startDate = self.__convertDate(self.start)
-		endDate = self.__convertDate(self.end)
-
-		productStartDate = self.__convertDate(self.productStart)
-		productEndDate = self.__convertDate(self.productEnd)
-
-		if startDate < productStartDate:
-			startDate = productStartDate
-		if endDate > productEndDate:
-			endDate = productEndDate
-
-		dateList = []
-
-		start = startDate
-		end = start
-		
-		temporalResolution = self.temporalResolution
-		if self.temporalResolution > 1:
-			temporalResolution -= 1
-
-		while end < endDate:
-
-			end = start + datetime.timedelta(days=temporalResolution)
-
-			if start.year != end.year:
-				end = start + datetime.timedelta(days=(31 - start.day))
-
-			if end > endDate:
-					end = endDate
-
-			dateList.append(
-					{
-							"start" : start.strftime("%Y-%m-%d"),
-							"end" : end.strftime("%Y-%m-%d")
-					}
-			)
-
-			start = end
-			start = start + datetime.timedelta(days=1)
-
-		return dateList
 
 	def __convertDate(self, strDate):
 		try:
