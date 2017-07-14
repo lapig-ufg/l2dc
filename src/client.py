@@ -34,8 +34,10 @@ def main():
 
 		bus = loader.getBus()		
 		datasource = loader.getDatasource(datasource,datasourceConfig)
-		#for message in datasource.generateMessages():
-		#bus.publishMessage(datasourceName, message)
+
+		for message in datasource.generateMessages():
+			print(message)
+			#bus.publishMessage(datasourceName, message)
 					
 	else:
 		exit(usage)

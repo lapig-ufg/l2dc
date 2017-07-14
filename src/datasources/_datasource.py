@@ -7,18 +7,10 @@ import inspect
 from communication import Message
 
 class Datasource:
-	def __init__(self, config):
+	def __init__(self, db, config):
+		self.db = db;
 		for key in config:
 			setattr(self, key, config[key])
-
-		self.gridName = self.__class__.__name__.lower()
-		cursor = loader.getMetadataDb();
-
-		lines = cursor.execute("SELECT utm_srid, asWkt(Geometry) as Geometry FROM wrs WHERE id = ?",('223071',))
-		rows = cursor.fetchall()
-		for row in rows:
-			print(row['utm_srid'], row['Geometry']);
-		
 
 	def __getYear(self, strDate):
 		return str(self.__convertDate(strDate).timetuple().tm_year)

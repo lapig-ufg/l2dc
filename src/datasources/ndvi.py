@@ -3,8 +3,8 @@ from _datasource import Datasource
 
 class Ndvi(Datasource):
 
-    def __init__(self, config):
-      Datasource.__init__(self, config)
+    def __init__(self, db, config):
+      Datasource.__init__(self, db, config)
 
     def generateMessages(self):
     	return [];

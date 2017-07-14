@@ -1,4 +1,4 @@
-from modis_acess import ModisAcess
+from db import Db
 
-__all__ = ["ModisAcess"]
+__all__ = ["Db"]
 
