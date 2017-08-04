@@ -3,8 +3,17 @@ from os import path
 from os import makedirs
 from os import remove
 from os import rename
+from os import symlink
 import shutil
+import string
 import datetime
+import pprint
+import ntpath
+
+pp = pprint.PrettyPrinter(indent=2)
+
+def pprint(stuff):
+	pp.pprint(stuff)
 
 def log(*arg):
 	identifier = arg[0]
@@ -26,11 +35,34 @@ def createDir(dirPath):
 
 	return True
 
+def basename(filepath, ext = None):
+	basename = ntpath.basename(filepath)
+	
+	if ext is not None:
+		splited = path.splitext(basename);
+		basename = splited[0] + '.' + ext
+
+	return basename
+
+def newBasename(filepath, suffix):
+	basename = ntpath.basename(filepath)
+	
+	splited = path.splitext(basename);
+	basename = splited[0] + suffix + splited[1]
+
+	return basename
+
+def createSynLink(inputFilepath, outputFilepath):
+	symlink(inputFilepath, outputFilepath)
+
 def removeDir(dirPath):
 	shutil.rmtree(dirPath)
 
 def moveFile(originFilepath, destinationFilepath):
 	rename(originFilepath, destinationFilepath)
+
+def fileExist(filepath):
+	return path.exists(filepath);
 
 def removeFileIfExist(filepath):
 	if path.exists(filepath):

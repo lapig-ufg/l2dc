@@ -9,3 +9,4 @@ class Quality(Module):
 
 	def process(self, message):
 		utils.log(self.name, 'Executing module Quality')
+		self.publish(message);

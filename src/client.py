@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import loader
+from datetime import datetime
 from sys import argv
 from utils import mapDict
 from multiprocessing import Process
@@ -28,16 +29,15 @@ def main():
 		datasourceConfig = {
 				"datasource": datasource
 			,	"rowPath": rowPath
-			,	"start": start
-			,	"end": end
+			,	"start": datetime.strptime(start, '%Y-%m-%d')
+			,	"end": datetime.strptime(end, '%Y-%m-%d')
 		}
 
 		bus = loader.getBus()		
 		datasource = loader.getDatasource(datasource,datasourceConfig)
 
 		for message in datasource.generateMessages():
-			print(message)
-			#bus.publishMessage(datasourceName, message)
+			bus.publishMessage('Reproject', message)
 					
 	else:
 		exit(usage)

@@ -9,3 +9,4 @@ class Complete(Module):
 
 	def process(self, message):
 		utils.log(self.name, 'Executing module Complete')
+		self.publish(message);

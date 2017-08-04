@@ -1,6 +1,8 @@
+import gdal
+import osr
 import subprocess
 
-TIF_CREATION_OPTIONS = ["COMPRESS=LZW", "INTERLEAVE=BAND", "TILED=YES", "BIGTIFF=IF_NEEDED"]
+TIF_CREATION_OPTIONS = ["COMPRESS=LZW", "INTERLEAVE=BAND", "BIGTIFF=IF_NEEDED"]
 ABC_LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
 def calc(inputFiles, outputFile, expression, dataType, noData):
@@ -43,6 +45,86 @@ def mosaic(inputFiles, outputFile, nodata = None, pixelSize = None):
 	
 	command += inputFiles
 	
+	print(command)
+	subprocess.call(command, stdout=subprocess.PIPE)
+
+def wkt2epsg(wkt, epsg='/usr/share/proj/epsg', forceProj4=False):
+	
+	code = None
+	p_in = osr.SpatialReference()
+	s = p_in.ImportFromWkt(wkt)
+	if s == 5:  # invalid WKT
+			return None
+	if p_in.IsLocal() == 1:  # this is a local definition
+			return p_in.ExportToWkt()
+	if p_in.IsGeographic() == 1:  # this is a geographic srs
+			cstype = 'GEOGCS'
+	else:  # this is a projected srs
+			cstype = 'PROJCS'
+	an = p_in.GetAuthorityName(cstype)
+	ac = p_in.GetAuthorityCode(cstype)
+	if an is not None and ac is not None:  # return the EPSG code
+			return '%s:%s' % \
+					(p_in.GetAuthorityName(cstype), p_in.GetAuthorityCode(cstype))
+	else:  # try brute force approach by grokking proj epsg definition file
+			p_out = p_in.ExportToProj4()
+			if p_out:
+					if forceProj4 is True:
+							return p_out
+					f = open(epsg)
+					for line in f:
+							if line.find(p_out) != -1:
+									m = re.search('<(\\d+)>', line)
+									if m:
+											code = m.group(1)
+											break
+					if code:  # match
+							return 'EPSG:%s' % code
+					else:  # no match
+							return None
+			else:
+					return None
+
+def info(imageFile):
+	imageDs = gdal.Open(imageFile)
+	
+	imageSrs = osr.SpatialReference()
+	imageSrs.ImportFromWkt(imageDs.GetProjection())
+
+	xOrigin, pixelWidth, zDummy, yOrigin, zDummy2, pixelHeight = imageDs.GetGeoTransform()
+
+	minx = xOrigin
+	maxy = yOrigin
+	maxx = minx + pixelWidth * imageDs.RasterXSize
+	miny = maxy + pixelHeight * imageDs.RasterYSize
+	extent = [minx, miny, maxx, maxy]
+
+	band = imageDs.GetRasterBand(1);
+	bandtype = gdal.GetDataTypeName(band.DataType);
+
+	result = {
+		"xSize": imageDs.RasterXSize,
+		"ySize": imageDs.RasterYSize,
+		"xOrigin": xOrigin,
+		"yOrigin": yOrigin,
+		"pixelWidth": pixelWidth,
+		"pixelHeight": pixelHeight,
+		"srid": wkt2epsg(imageDs.GetProjection()),
+		"extent": extent,
+		"nBands": imageDs.RasterCount,
+		"dataType": bandtype.upper(),
+		"format": imageDs.GetDriver().LongName
+	};
+
+	return result;
+
+def reproject(imageFile, outputFile, srid):
+	command = ["gdalwarp", '-t_srs' , srid]
+
+	__setCreationOption(command, '-co')
+
+	command += [imageFile, outputFile]
+
 	print(command)
 	subprocess.call(command, stdout=subprocess.PIPE)
 

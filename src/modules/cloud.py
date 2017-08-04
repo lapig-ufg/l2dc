@@ -9,3 +9,4 @@ class Cloud(Module):
 
 	def process(self, message):
 		utils.log(self.name, 'Executing module Cloud')
+		self.publish(message);

@@ -9,3 +9,4 @@ class Composite(Module):
 
 	def process(self, message):
 		utils.log(self.name, 'Executing module Composite')
+		self.publish(message);
