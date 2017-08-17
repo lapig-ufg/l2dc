@@ -16,4 +16,5 @@ class Bus:
 		self.connection.rpush(channel, data)
 
 	def getMessage(self):
-		return self.connection.lpop(self.channel)
+		key, data = self.connection.blpop(self.channel)
+		return data;

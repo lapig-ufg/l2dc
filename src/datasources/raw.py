@@ -18,15 +18,19 @@ class Raw(Datasource):
 		meessages = [];
 
 		for sensor in sensors:
-			images = self._getImagesBySensor(sensor['id']);
+			images = self._getImagesBySensor(sensor);
 			for key in images:
 				message = Message();
 				message.set('images',images[key]);
+				message.set('sensor',sensor);
 				meessages.append(message);
 
 		return meessages
 
-	def _getImagesBySensor(self, sensorId):
+	def _getImagesBySensor(self, sensor):
+
+		sensorId = sensor['id'];
+		metadataSuffix = sensor['fn_suffix_metadata_file'];
 
 		posOffset = len(self.path_images) + len(sensorId) + 2;
 		extensions = ['tif','TIF','jp2','JP2']
@@ -72,9 +76,11 @@ class Raw(Datasource):
 							
 							spectralBandCopy = spectralBand.copy();
 							spectralBandCopy['aquisition_date'] = dateStd;
-							spectralBandCopy['overpass_od'] = overpass;
-							spectralBandCopy['filepath'] = bandFile;
+							spectralBandCopy['overpass_id'] = overpass;
 							spectralBandCopy['filename'] = utils.basename(bandFile);
+							spectralBandCopy['filename_noband_noext'] = self._getMetadataFile(bandPatrn, utils.basename(bandFile), '');
+							spectralBandCopy['filepath'] = bandFile;
+							spectralBandCopy['filepath_metadata'] = self._getMetadataFile(bandPatrn, bandFile, metadataSuffix);
 							spectralBandCopy['fileinfo'] = fileInfo;
 							spectralBandCopy['wrs'] = wrs.copy();
 
@@ -93,6 +99,13 @@ class Raw(Datasource):
 							spectralBandsMap[key].append(spectralBandCopy);
 
 		return spectralBandsMap;
+
+	def _getMetadataFile(self, bandPatrn, bandFile, metadataSuffix):
+		if metadataSuffix is not None:
+			bandPatrnAux = bandPatrn.replace('.','')
+			return utils.newFileReplacePattern(bandFile, bandPatrnAux, metadataSuffix);
+		else:
+			return '';
 
 	def __getImageDate(self, filename, dateType, dtStart):
 		if(dateType == 'DOY'):

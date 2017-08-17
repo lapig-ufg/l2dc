@@ -52,6 +52,12 @@ def newBasename(filepath, suffix):
 
 	return basename
 
+def newFileReplacePattern(filepath, pattern, suffix):
+	splited = path.splitext(filepath);
+	basename = splited[0].replace(pattern,suffix);
+
+	return basename
+
 def createSynLink(inputFilepath, outputFilepath):
 	symlink(inputFilepath, outputFilepath)
 

@@ -1,9 +1,48 @@
+import re
+import os
 import gdal
 import osr
 import subprocess
 
+gdal.UseExceptions();
+
 TIF_CREATION_OPTIONS = ["COMPRESS=LZW", "INTERLEAVE=BAND", "BIGTIFF=IF_NEEDED"]
 ABC_LETTERS = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+
+def vrtStack(inputFiles, outputFile):
+	command = ["gdalbuildvrt", '-separate', '-overwrite', outputFile];
+
+	for inputFile in inputFiles:
+		command.append(inputFile);
+
+	FNULL = open(os.devnull, 'w')
+	subprocess.call(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+def stack(inputFiles, outputFile):
+	command = ["gdal_merge.py", '-separate', '-o', outputFile];
+
+	__setCreationOption(command, '-co')
+
+	for inputFile in inputFiles:
+		command.append(inputFile);
+
+
+	FNULL = open(os.devnull, 'w')
+	print(" ".join(command))
+	subprocess.call(command, stdout=FNULL, stderr=subprocess.STDOUT)
+
+def destack(inputFile, outputFiles):
+
+	for i in xrange(0,len(outputFiles)):
+		outputFile = outputFiles[i]
+		
+		command = ["gdal_translate",'-b', str(i+1) ];
+		__setCreationOption(command, '-co')
+		command += [inputFile, outputFile];
+		
+		FNULL = open(os.devnull, 'w')
+		print(" ".join(command))
+		subprocess.call(command, stdout=FNULL, stderr=subprocess.STDOUT)
 
 def calc(inputFiles, outputFile, expression, dataType, noData):
 	
@@ -23,8 +62,8 @@ def calc(inputFiles, outputFile, expression, dataType, noData):
 	command += ["--calc=" + '(' + expression + ')']
 	__setCreationOption(command, '--co=', True)
 
-	print(command)
-	subprocess.call(command, stdout=subprocess.PIPE)
+	FNULL = open(os.devnull, 'w')
+	subprocess.call(command, stdout=FNULL, stderr=subprocess.STDOUT)
 
 def mosaic(inputFiles, outputFile, nodata = None, pixelSize = None):
 	command = ["gdal_merge.py"]
@@ -45,8 +84,8 @@ def mosaic(inputFiles, outputFile, nodata = None, pixelSize = None):
 	
 	command += inputFiles
 	
-	print(command)
-	subprocess.call(command, stdout=subprocess.PIPE)
+	FNULL = open(os.devnull, 'w')
+	subprocess.call(command, stdout=FNULL, stderr=subprocess.STDOUT)
 
 def wkt2epsg(wkt, epsg='/usr/share/proj/epsg', forceProj4=False):
 	
@@ -84,6 +123,14 @@ def wkt2epsg(wkt, epsg='/usr/share/proj/epsg', forceProj4=False):
 							return None
 			else:
 					return None
+
+def isValid(imageFile):
+	try:
+		imageDs = gdal.Open(imageFile)
+		imageDs.RasterCount;
+		return True;
+	except:
+		return False;
 
 def info(imageFile):
 	imageDs = gdal.Open(imageFile)
@@ -125,8 +172,8 @@ def reproject(imageFile, outputFile, srid):
 
 	command += [imageFile, outputFile]
 
-	print(command)
-	subprocess.call(command, stdout=subprocess.PIPE)
+	FNULL = open(os.devnull, 'w')
+	subprocess.call(command, stdout=FNULL, stderr=subprocess.STDOUT)
 
 def clip(imageFile, outputFile, shapeFile, nodata = None):
 	command = ["gdalwarp", "-crop_to_cutline", "-cutline", shapeFile]
@@ -139,8 +186,8 @@ def clip(imageFile, outputFile, shapeFile, nodata = None):
 
 	command += [imageFile, outputFile]
 
-	print(command)
-	subprocess.call(command, stdout=subprocess.PIPE)
+	FNULL = open(os.devnull, 'w')
+	subprocess.call(command, stdout=FNULL, stderr=subprocess.STDOUT)
 
 def clipCmd(pathClipCmd, imageFile, outputFile, shapeFile, nodata = None):
 	command = [pathClipCmd, shapeFile, imageFile, outputFile]

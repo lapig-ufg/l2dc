@@ -67,7 +67,7 @@ class Module:
 
 			if message is not None:
 				break	
-			time.sleep(self.sleep_time)
+			#time.sleep(self.sleep_time)
 			
 		if self.debug_flag == 2:
 			utils.log(self.name, 'receive message: ', message)

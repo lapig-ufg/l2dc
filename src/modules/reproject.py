@@ -16,7 +16,7 @@ class Reproject(Module):
 			
 			outputDir = os.path.join(self.module_path,image['sensor_id'])
 			outputFile = os.path.join(outputDir, utils.basename(image['filename'], 'tif'));
-			inputFile = os.path.join(outputDir, image['filepath'])
+			inputFile = image['filepath']
 
 			utils.createDir(outputDir);
 

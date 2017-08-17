@@ -8,7 +8,8 @@ def registration(configFile, orthoPath = 'ortho'):
 	command = [orthoPath, '-r', configFile]
 
 	print(command)
-	subprocess.call(command, stdout=subprocess.PIPE)
+	FNULL = open(os.devnull, 'w')
+	subprocess.call(command, stdout=FNULL, stderr=subprocess.STDOUT)
 
 def generateConfig(baseLandsatImage, baseWarpImage, outputDir, warpImages, baseLandsatImageInfo = None):
 

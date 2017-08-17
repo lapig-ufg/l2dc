@@ -13,12 +13,13 @@ class Arop(Module):
 		utils.log(self.name, 'Executing module')
 		images = message.get('images');
 
+		outputDir = os.path.join(self.module_path, images[0]['sensor_id']);
+
 		redImage, nirImage, baseWarpImage = self.separateImages(images)
-		
+
 		if(redImage is not None and nirImage is not None):
 			if redImage['sensor_id'] not in ['L8_OLI_T1','L7_ETM_T1']:
 					
-					outputDir = os.path.join(self.module_path, redImage['sensor_id'])
 					ndviFilepath = os.path.join(outputDir, utils.newBasename(redImage['filename'], '_NDVI'));
 					baseNdviLandsat = os.path.join(self.ref_wrs_dir,'NDVI_'+redImage['wrs']['id']+".tif");
 					
@@ -28,7 +29,19 @@ class Arop(Module):
 					self.processArop(baseNdviLandsat, ndviFilepath, outputDir, baseWarpImage, redImage)
 
 			else:
-				self.createImageSymLinks(images);
+				self.createImageSymLinks(images, outputDir);
+
+			for image in images:
+				outputFile = os.path.join(outputDir, image['filename']);
+				
+				if not gdal_utils.isValid(outputFile):
+					return
+				
+				image['fileinfo'] = gdal_utils.info(outputFile);
+				image['filepath'] = outputFile;
+
+			self.publish(message);
+
 		else:
 			utils.log(self.name, images[0]['filename'], ' - RED or NIR bands doesn\'t exists.')
 
@@ -67,12 +80,11 @@ class Arop(Module):
 
 		return redImage, nirImage, baseWarpImage;
 
-	def createImageSymLinks(self,images):
+	def createImageSymLinks(self, images, outputDir):
 		for image in images:
 			
-			outputDir = os.path.join(self.module_path,image['sensor_id'])
 			outputFile = os.path.join(outputDir,image['filename']);
-			inputFile = os.path.join(outputDir,image['filepath'])
+			inputFile = image['filepath']
 
 			utils.createDir(outputDir);
 

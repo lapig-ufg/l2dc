@@ -36,6 +36,7 @@ def main():
 		bus = loader.getBus()		
 		datasource = loader.getDatasource(datasource,datasourceConfig)
 
+		datasource.generateMessages()
 		for message in datasource.generateMessages():
 			bus.publishMessage('Reproject', message)
 					
