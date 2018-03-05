@@ -41,20 +41,20 @@ class Raw(Datasource):
 
 		files.sort();
 
-		spectralBandsMap = {};
-		spectralBands = self.db.getSpectralBands(sensorId);
+		bandsMap = {};
+		bands = self.db.getBands(sensorId);
 
-		for spectralBand in spectralBands:
+		for band in bands:
 			
-			dateType = spectralBand['fn_pattern_date_type'];
-			dtStart = spectralBand['fn_pattern_date_start_pos']  + posOffset;
+			dateType = band['fn_pattern_date_type'];
+			dtStart = band['fn_pattern_date_start_pos']  + posOffset;
 
-			bandPatrn = spectralBand['fn_pattern_band_name'];
-			bandStart = spectralBand['fn_pattern_band_start_pos'] + posOffset;
+			bandPatrn = band['fn_pattern_band_name'];
+			bandStart = band['fn_pattern_band_start_pos'] + posOffset;
 			bandEnd = bandStart + len(bandPatrn);
 
-			overpassIdStart = spectralBand['fn_pattern_overpass_id_start'] + posOffset;
-			overpassIdEnd = spectralBand['fn_pattern_overpass_id_end'] + posOffset;
+			overpassIdStart = band['fn_pattern_overpass_id_start'] + posOffset;
+			overpassIdEnd = band['fn_pattern_overpass_id_end'] + posOffset;
 
 			for bandFile in files:
 				if bandPatrn == bandFile[bandStart:bandEnd]:
@@ -74,31 +74,31 @@ class Raw(Datasource):
 							dateStd = bandDate.strftime('%Y-%m-%d');
 							key = overpass + "_" + dateStd;
 							
-							spectralBandCopy = spectralBand.copy();
-							spectralBandCopy['aquisition_date'] = dateStd;
-							spectralBandCopy['overpass_id'] = overpass;
-							spectralBandCopy['filename'] = utils.basename(bandFile);
-							spectralBandCopy['filename_noband_noext'] = self._getMetadataFile(bandPatrn, utils.basename(bandFile), '');
-							spectralBandCopy['filepath'] = bandFile;
-							spectralBandCopy['filepath_metadata'] = self._getMetadataFile(bandPatrn, bandFile, metadataSuffix);
-							spectralBandCopy['fileinfo'] = fileInfo;
-							spectralBandCopy['wrs'] = wrs.copy();
+							bandCopy = band.copy();
+							bandCopy['aquisition_date'] = dateStd;
+							bandCopy['overpass_id'] = overpass;
+							bandCopy['filename'] = utils.basename(bandFile);
+							bandCopy['filename_noband_noext'] = self._getMetadataFile(bandPatrn, utils.basename(bandFile), '');
+							bandCopy['filepath'] = bandFile;
+							bandCopy['filepath_metadata'] = self._getMetadataFile(bandPatrn, bandFile, metadataSuffix);
+							bandCopy['fileinfo'] = fileInfo;
+							bandCopy['wrs'] = wrs.copy();
 
-							spectralBandCopy['wrs']['utm_srid'] = 'EPSG:' + str(spectralBandCopy['wrs']['utm_srid']);
+							bandCopy['wrs']['utm_srid'] = 'EPSG:' + str(bandCopy['wrs']['utm_srid']);
 
-							spectralBandCopy.pop('fn_pattern_band_name',None)
-							spectralBandCopy.pop('fn_pattern_band_start_pos',None)
-							spectralBandCopy.pop('fn_pattern_date_start_pos',None)
-							spectralBandCopy.pop('fn_pattern_date_type',None)
-							spectralBandCopy.pop('fn_pattern_overpass_id_end',None)
-							spectralBandCopy.pop('fn_pattern_overpass_id_start',None)
+							bandCopy.pop('fn_pattern_band_name',None)
+							bandCopy.pop('fn_pattern_band_start_pos',None)
+							bandCopy.pop('fn_pattern_date_start_pos',None)
+							bandCopy.pop('fn_pattern_date_type',None)
+							bandCopy.pop('fn_pattern_overpass_id_end',None)
+							bandCopy.pop('fn_pattern_overpass_id_start',None)
 
-							if not key in spectralBandsMap:
-								spectralBandsMap[key] = [];
+							if not key in bandsMap:
+								bandsMap[key] = [];
 
-							spectralBandsMap[key].append(spectralBandCopy);
+							bandsMap[key].append(bandCopy);
 
-		return spectralBandsMap;
+		return bandsMap;
 
 	def _getMetadataFile(self, bandPatrn, bandFile, metadataSuffix):
 		if metadataSuffix is not None:

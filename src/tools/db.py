@@ -31,8 +31,8 @@ class Db():
 
 		return result[0]['intersects'];
 
-	def getSpectralBands(self, sensorId):
-		self.cursor.execute("SELECT * FROM spectral_bands WHERE sensor_id = ?",(sensorId,));
+	def getBands(self, sensorId):
+		self.cursor.execute("SELECT * FROM bands WHERE sensor_id = ?",(sensorId,));
 		return self.cursor.fetchall();
 
 	def getAllSensors(self):

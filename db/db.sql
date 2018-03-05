@@ -4,7 +4,7 @@ PRAGMA cache_size = -1024000;
 DROP TABLE IF EXISTS "composite_images";
 DROP TABLE IF EXISTS "index_images";
 DROP TABLE IF EXISTS "normalized_images";
-DROP TABLE IF EXISTS "spectral_bands";
+DROP TABLE IF EXISTS "bands";
 DROP TABLE IF EXISTS "sensors";
 DROP TABLE IF EXISTS "wrs";
 
@@ -22,12 +22,12 @@ CREATE TABLE "sensors" (
 	"fn_suffix_metadata_file" TEXT
 );
 
-CREATE TABLE "spectral_bands"(
+CREATE TABLE "bands"(
 	"sensor_id" TEXT,
 	"band_number" TEXT,
 	"is_red_band" INTEGER,
 	"is_nir_band" INTEGER,
-	"is_thermal_band" INTEGER,
+	"type" TEXT,
 	"band_name" TEXT,
 	"mm_start_interval" REAL,
 	"mm_central_interval" REAL,
@@ -64,7 +64,7 @@ CREATE TABLE "normalized_images"(
 	"cloud_cover" REAL,
 	"img_filepath" TEXT,
 	"cloud_filepath" TEXT,
-	FOREIGN KEY("sensor_id","band_number") REFERENCES "spectral_bands"("sensor_id","band_number")
+	FOREIGN KEY("sensor_id","band_number") REFERENCES "bands"("sensor_id","band_number")
 );
 
 CREATE TABLE "index_images"(
@@ -107,105 +107,107 @@ INSERT INTO "sensors" VALUES('SP_VIIRS','VIIRS','Visible/Infrared Imager Radiome
 -------------------------------------------------------------------------------------------
 --------------------------------- spectral_bands values -----------------------------------
 -------------------------------------------------------------------------------------------
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','1',0,0,0,'Ultra Blue (coastal/aerosol)',0.435,NULL,NULL,0.451,30,'B1.',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','2',0,0,0,'Blue',0.452,NULL,NULL,0.512,30,'B2',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','3',0,0,0,'Green',0.533,NULL,NULL,0.590,30,'B3',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','4',1,0,0,'Red',0.636,NULL,NULL,0.673,30,'B4',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','5',0,1,0,'Near Infrared (NIR)',0.851,NULL,NULL,0.879,30,'B5',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','6',0,0,0,'Shortwave Infrared (SWIR) 1',1.566,NULL,NULL,1.651,30,'B6',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','7',0,0,0,'Shortwave Infrared (SWIR) 2',2.107,NULL,NULL,2.294,30,'B7',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','9',0,0,0,'Cirrus',1.363,NULL,NULL,1.384,30,'B9',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','10',0,0,1,'Thermal Infrared (TIRS) 1',10.60,NULL,NULL,11.19,100,'B10',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L8_OLI_T1','11',0,0,1,'Thermal Infrared (TIRS) 2',11.50,NULL,NULL,12.51,100,'B11',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','1',0,0,'SPECTRAL','Ultra Blue (coastal/aerosol)',0.435,NULL,NULL,0.451,30,'B1.',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','2',0,0,'SPECTRAL','Blue',0.452,NULL,NULL,0.512,30,'B2',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','3',0,0,'SPECTRAL','Green',0.533,NULL,NULL,0.590,30,'B3',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','4',1,0,'SPECTRAL','Red',0.636,NULL,NULL,0.673,30,'B4',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','5',0,1,'SPECTRAL','Near Infrared (NIR)',0.851,NULL,NULL,0.879,30,'B5',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','6',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 1',1.566,NULL,NULL,1.651,30,'B6',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','7',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 2',2.107,NULL,NULL,2.294,30,'B7',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','9',0,0,'SPECTRAL','Cirrus',1.363,NULL,NULL,1.384,30,'B9',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','10',0,0,'THERMAL','Thermal Infrared (TIRS) 1',10.60,NULL,NULL,11.19,100,'B10',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','11',0,0,'THERMAL','Thermal Infrared (TIRS) 2',11.50,NULL,NULL,12.51,100,'B11',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L8_OLI_T1','12',0,0,'METADATA','Quality Assessment Band',NULL,NULL,NULL,null,30,'BQA',41,'DTE',17,10,16);
 
-INSERT INTO "spectral_bands" VALUES('L7_ETM_T1','1',0,0,0,'Blue',0.45,NULL,NULL,0.52,30,'B1',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L7_ETM_T1','2',0,0,0,'Green',0.52,NULL,NULL,0.60,30,'B2',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L7_ETM_T1','3',1,0,0,'Red',0.63,NULL,NULL,0.69,30,'B3',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L7_ETM_T1','4',0,1,0,'Near Infrared (NIR)',0.77,NULL,NULL,0.90,30,'B4',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L7_ETM_T1','5',0,0,0,'Shortwave Infrared (SWIR) 1',1.55,NULL,NULL,1.75,30,'B5',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L7_ETM_T1','6',0,0,1,'Thermal',10.40,NULL,NULL,12.50,60,'B6_VCID_2',41,'DTE',17,10,16);
-INSERT INTO "spectral_bands" VALUES('L7_ETM_T1','7',0,0,0,'Shortwave Infrared (SWIR) 2',2.09,NULL,NULL,2.35,30,'B7',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L7_ETM_T1','1',0,0,'SPECTRAL','Blue',0.45,NULL,NULL,0.52,30,'B1',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L7_ETM_T1','2',0,0,'SPECTRAL','Green',0.52,NULL,NULL,0.60,30,'B2',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L7_ETM_T1','3',1,0,'SPECTRAL','Red',0.63,NULL,NULL,0.69,30,'B3',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L7_ETM_T1','4',0,1,'SPECTRAL','Near Infrared (NIR)',0.77,NULL,NULL,0.90,30,'B4',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L7_ETM_T1','5',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 1',1.55,NULL,NULL,1.75,30,'B5',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L7_ETM_T1','6',0,0,'THERMAL','Thermal',10.40,NULL,NULL,12.50,60,'B6_VCID_2',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L7_ETM_T1','7',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 2',2.09,NULL,NULL,2.35,30,'B7',41,'DTE',17,10,16);
+INSERT INTO "bands" VALUES('L7_ETM_T1','8',0,0,'METADATA','Quality Assessment Band',NULL,NULL,NULL,null,30,'BQA',41,'DTE',17,10,16);
 
-INSERT INTO "spectral_bands" VALUES('L5_TM','1',0,0,0,'Blue',0.45,NULL,NULL,0.52,30,'B1',22,'DOY',9,3,9);
-INSERT INTO "spectral_bands" VALUES('L5_TM','2',0,0,0,'Green',0.52,NULL,NULL,0.60,30,'B2',22,'DOY',9,3,9);
-INSERT INTO "spectral_bands" VALUES('L5_TM','3',1,0,0,'Red',0.63,NULL,NULL,0.69,30,'B3',22,'DOY',9,3,9);
-INSERT INTO "spectral_bands" VALUES('L5_TM','4',0,1,0,'Near Infrared (NIR)',0.76,NULL,NULL,0.90,30,'B4',22,'DOY',9,3,9);
-INSERT INTO "spectral_bands" VALUES('L5_TM','5',0,0,0,'Shortwave Infrared (SWIR) 1',1.55,NULL,NULL,1.75,30,'B5',22,'DOY',9,3,9);
-INSERT INTO "spectral_bands" VALUES('L5_TM','6',0,0,1,'Thermal',10.40,NULL,NULL,12.50,120,'B6',22,'DOY',9,3,9);
-INSERT INTO "spectral_bands" VALUES('L5_TM','7',0,0,0,'Shortwave Infrared (SWIR) 2',2.08,NULL,NULL,2.35,30,'B7',22,'DOY',9,3,9);
+INSERT INTO "bands" VALUES('L5_TM','1',0,0,'SPECTRAL','Blue',0.45,NULL,NULL,0.52,30,'B1',22,'DOY',9,3,9);
+INSERT INTO "bands" VALUES('L5_TM','2',0,0,'SPECTRAL','Green',0.52,NULL,NULL,0.60,30,'B2',22,'DOY',9,3,9);
+INSERT INTO "bands" VALUES('L5_TM','3',1,0,'SPECTRAL','Red',0.63,NULL,NULL,0.69,30,'B3',22,'DOY',9,3,9);
+INSERT INTO "bands" VALUES('L5_TM','4',0,1,'SPECTRAL','Near Infrared (NIR)',0.76,NULL,NULL,0.90,30,'B4',22,'DOY',9,3,9);
+INSERT INTO "bands" VALUES('L5_TM','5',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 1',1.55,NULL,NULL,1.75,30,'B5',22,'DOY',9,3,9);
+INSERT INTO "bands" VALUES('L5_TM','6',0,0,'THERMAL','Thermal',10.40,NULL,NULL,12.50,120,'B6',22,'DOY',9,3,9);
+INSERT INTO "bands" VALUES('L5_TM','7',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 2',2.08,NULL,NULL,2.35,30,'B7',22,'DOY',9,3,9);
 
-INSERT INTO "spectral_bands" VALUES('C4_MUX','5',0,0,0,'Blue',0.45,NULL,NULL,0.52,20,'BAND5',32,'DTE',12,21,28);
-INSERT INTO "spectral_bands" VALUES('C4_MUX','6',0,0,0,'Green',0.52,NULL,NULL,0.59,20,'BAND6',32,'DTE',12,21,28);
-INSERT INTO "spectral_bands" VALUES('C4_MUX','7',1,0,0,'Red',0.63,NULL,NULL,0.69,20,'BAND7',32,'DTE',12,21,28);
-INSERT INTO "spectral_bands" VALUES('C4_MUX','8',0,1,0,'Near Infrared (NIR)',0.77,NULL,NULL,0.89,20,'BAND8',32,'DTE',12,21,28);
+INSERT INTO "bands" VALUES('C4_MUX','5',0,0,'SPECTRAL','Blue',0.45,NULL,NULL,0.52,20,'BAND5',32,'DTE',12,21,28);
+INSERT INTO "bands" VALUES('C4_MUX','6',0,0,'SPECTRAL','Green',0.52,NULL,NULL,0.59,20,'BAND6',32,'DTE',12,21,28);
+INSERT INTO "bands" VALUES('C4_MUX','7',1,0,'SPECTRAL','Red',0.63,NULL,NULL,0.69,20,'BAND7',32,'DTE',12,21,28);
+INSERT INTO "bands" VALUES('C4_MUX','8',0,1,'SPECTRAL','Near Infrared (NIR)',0.77,NULL,NULL,0.89,20,'BAND8',32,'DTE',12,21,28);
 
-INSERT INTO "spectral_bands" VALUES('CB_HRCC','1',0,0,0,'Blue',0.43,NULL,NULL,0.52,20,'BAND1',36,'DTE',16,25,32);
-INSERT INTO "spectral_bands" VALUES('CB_HRCC','2',0,0,0,'Green',0.52,NULL,NULL,0.59,20,'BAND2',36,'DTE',16,25,32);
-INSERT INTO "spectral_bands" VALUES('CB_HRCC','3',1,0,0,'Red',0.63,NULL,NULL,0.69,20,'BAND3',36,'DTE',16,25,32);
-INSERT INTO "spectral_bands" VALUES('CB_HRCC','4',0,1,0,'Near Infrared (NIR)',0.77,NULL,NULL,0.89,20,'BAND4',36,'DTE',16,25,32);
+INSERT INTO "bands" VALUES('CB_HRCC','1',0,0,'SPECTRAL','Blue',0.43,NULL,NULL,0.52,20,'BAND1',36,'DTE',16,25,32);
+INSERT INTO "bands" VALUES('CB_HRCC','2',0,0,'SPECTRAL','Green',0.52,NULL,NULL,0.59,20,'BAND2',36,'DTE',16,25,32);
+INSERT INTO "bands" VALUES('CB_HRCC','3',1,0,'SPECTRAL','Red',0.63,NULL,NULL,0.69,20,'BAND3',36,'DTE',16,25,32);
+INSERT INTO "bands" VALUES('CB_HRCC','4',0,1,'SPECTRAL','Near Infrared (NIR)',0.77,NULL,NULL,0.89,20,'BAND4',36,'DTE',16,25,32);
 
-INSERT INTO "spectral_bands" VALUES('C2_HRCC','1',0,0,0,'Blue',0.43,NULL,NULL,0.52,20,'BAND1',35,'DTE',15,24,31);
-INSERT INTO "spectral_bands" VALUES('C2_HRCC','2',0,0,0,'Green',0.52,NULL,NULL,0.59,20,'BAND2',35,'DTE',15,24,31);
-INSERT INTO "spectral_bands" VALUES('C2_HRCC','3',1,0,0,'Red',0.63,NULL,NULL,0.69,20,'BAND3',35,'DTE',15,24,31);
-INSERT INTO "spectral_bands" VALUES('C2_HRCC','4',0,1,0,'Near Infrared (NIR)',0.77,NULL,NULL,0.89,20,'BAND4',35,'DTE',15,24,31);
+INSERT INTO "bands" VALUES('C2_HRCC','1',0,0,'SPECTRAL','Blue',0.43,NULL,NULL,0.52,20,'BAND1',35,'DTE',15,24,31);
+INSERT INTO "bands" VALUES('C2_HRCC','2',0,0,'SPECTRAL','Green',0.52,NULL,NULL,0.59,20,'BAND2',35,'DTE',15,24,31);
+INSERT INTO "bands" VALUES('C2_HRCC','3',1,0,'SPECTRAL','Red',0.63,NULL,NULL,0.69,20,'BAND3',35,'DTE',15,24,31);
+INSERT INTO "bands" VALUES('C2_HRCC','4',0,1,'SPECTRAL','Near Infrared (NIR)',0.77,NULL,NULL,0.89,20,'BAND4',35,'DTE',15,24,31);
 
-INSERT INTO "spectral_bands" VALUES('R2_LISS3','2',0,0,0,'Green',0.52,NULL,NULL,0.59,23.5,'BAND2',30,'DOY',9,4,19);
-INSERT INTO "spectral_bands" VALUES('R2_LISS3','3',1,0,0,'Red',0.62,NULL,NULL,0.69,23.5,'BAND3',30,'DOY',9,4,19);
-INSERT INTO "spectral_bands" VALUES('R2_LISS3','4',0,1,0,'Near Infrared (NIR)',0.77,NULL,NULL,0.86,23.5,'BAND4',30,'DOY',9,4,19);
-INSERT INTO "spectral_bands" VALUES('R2_LISS3','5',0,0,0,'Shortwave Infrared (SWIR) 1',1.55,NULL,NULL,1.70,23.5,'BAND5',30,'DOY',9,4,19);
+INSERT INTO "bands" VALUES('R2_LISS3','2',0,0,'SPECTRAL','Green',0.52,NULL,NULL,0.59,23.5,'BAND2',30,'DOY',9,4,19);
+INSERT INTO "bands" VALUES('R2_LISS3','3',1,0,'SPECTRAL','Red',0.62,NULL,NULL,0.69,23.5,'BAND3',30,'DOY',9,4,19);
+INSERT INTO "bands" VALUES('R2_LISS3','4',0,1,'SPECTRAL','Near Infrared (NIR)',0.77,NULL,NULL,0.86,23.5,'BAND4',30,'DOY',9,4,19);
+INSERT INTO "bands" VALUES('R2_LISS3','5',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 1',1.55,NULL,NULL,1.70,23.5,'BAND5',30,'DOY',9,4,19);
 
-INSERT INTO "spectral_bands" VALUES('R1_LISS3','2',0,0,0,'Green',0.52,NULL,NULL,0.59,23.5,'BAND2',29,'DTE',9,18,25);
-INSERT INTO "spectral_bands" VALUES('R1_LISS3','3',1,0,0,'Red',0.62,NULL,NULL,0.69,23.5,'BAND3',29,'DTE',9,18,25);
-INSERT INTO "spectral_bands" VALUES('R1_LISS3','4',0,1,0,'Near Infrared (NIR)',0.77,NULL,NULL,0.86,23.5,'BAND4',29,'DTE',9,18,25);
-INSERT INTO "spectral_bands" VALUES('R1_LISS3','5',0,0,0,'Shortwave Infrared (SWIR) 1',1.55,NULL,NULL,1.70,23.5,'BAND5',29,'DTE',9,18,25);
+INSERT INTO "bands" VALUES('R1_LISS3','2',0,0,'SPECTRAL','Green',0.52,NULL,NULL,0.59,23.5,'BAND2',29,'DTE',9,18,25);
+INSERT INTO "bands" VALUES('R1_LISS3','3',1,0,'SPECTRAL','Red',0.62,NULL,NULL,0.69,23.5,'BAND3',29,'DTE',9,18,25);
+INSERT INTO "bands" VALUES('R1_LISS3','4',0,1,'SPECTRAL','Near Infrared (NIR)',0.77,NULL,NULL,0.86,23.5,'BAND4',29,'DTE',9,18,25);
+INSERT INTO "bands" VALUES('R1_LISS3','5',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 1',1.55,NULL,NULL,1.70,23.5,'BAND5',29,'DTE',9,18,25);
 
-INSERT INTO "spectral_bands" VALUES('UK_SLIM6','3',0,0,0,'Green',0.52,NULL,NULL,0.62,32,'B3',51,'DTE',31,0,24);
-INSERT INTO "spectral_bands" VALUES('UK_SLIM6','2',1,0,0,'Red',0.63,NULL,NULL,0.69,32,'B2',51,'DTE',31,0,24);
-INSERT INTO "spectral_bands" VALUES('UK_SLIM6','1',0,1,0,'Near Infrared (NIR)',0.76,NULL,NULL,0.90,32,'B1',51,'DTE',31,0,24);
+INSERT INTO "bands" VALUES('UK_SLIM6','3',0,0,'SPECTRAL','Green',0.52,NULL,NULL,0.62,32,'B3',51,'DTE',31,0,24);
+INSERT INTO "bands" VALUES('UK_SLIM6','2',1,0,'SPECTRAL','Red',0.63,NULL,NULL,0.69,32,'B2',51,'DTE',31,0,24);
+INSERT INTO "bands" VALUES('UK_SLIM6','1',0,1,'SPECTRAL','Near Infrared (NIR)',0.76,NULL,NULL,0.90,32,'B1',51,'DTE',31,0,24);
 
-INSERT INTO "spectral_bands" VALUES('TR_ASTER','1',0,0,0,'Green',0.52,NULL,NULL,0.60,30,'01_VNIR',39,'DTE',30,7,29);
-INSERT INTO "spectral_bands" VALUES('TR_ASTER','2',1,0,0,'Red',0.63,NULL,NULL,0.69,30,'02_VNIR',39,'DTE',30,7,29);
-INSERT INTO "spectral_bands" VALUES('TR_ASTER','3',0,1,0,'Near Infrared (NIR) Nadir looking',0.76,NULL,NULL,0.86,30,'03N_VNIR',39,'DTE',30,7,29);
-INSERT INTO "spectral_bands" VALUES('TR_ASTER','4',0,0,0,'Shortwave Infrared (SWIR) 1',1.6,NULL,NULL,1.7,30,'04_SWIR',39,'DTE',30,7,29);
-INSERT INTO "spectral_bands" VALUES('TR_ASTER','5',0,0,0,'Shortwave Infrared (SWIR) 2',2.145,NULL,NULL,2.185,30,'05_SWIR',39,'DTE',30,7,29);
-INSERT INTO "spectral_bands" VALUES('TR_ASTER','6',0,0,0,'Shortwave Infrared (SWIR) 3',2.185,NULL,NULL,2.225,30,'06_SWIR',39,'DTE',30,7,29);
-INSERT INTO "spectral_bands" VALUES('TR_ASTER','7',0,0,0,'Shortwave Infrared (SWIR) 4',2.235,NULL,NULL,2.285,30,'07_SWIR',39,'DTE',30,7,29);
-INSERT INTO "spectral_bands" VALUES('TR_ASTER','8',0,0,0,'Shortwave Infrared (SWIR) 5',2.295,NULL,NULL,2.365,30,'08_SWIR',39,'DTE',30,7,29);
-INSERT INTO "spectral_bands" VALUES('TR_ASTER','9',0,0,0,'Shortwave Infrared (SWIR) 6',2.360,NULL,NULL,2.430,30,'09_SWIR',39,'DTE',30,7,29);
---INSERT INTO "spectral_bands" VALUES('TR_ASTER','10',0,0,1,'Thermal Infrared (TIRS) 1',8.125,NULL,NULL,8.475,30,'10_TIR',39,'DTE',30,7,29);
---INSERT INTO "spectral_bands" VALUES('TR_ASTER','11',0,0,1,'Thermal Infrared (TIRS) 2',8.475,NULL,NULL,8.825,30,'11_TIR',39,'DTE',30,7,29);
---INSERT INTO "spectral_bands" VALUES('TR_ASTER','12',0,0,1,'Thermal Infrared (TIRS) 3',8.925,NULL,NULL,9.275,30,'12_TIR',39,'DTE',30,7,29);
---INSERT INTO "spectral_bands" VALUES('TR_ASTER','13',0,0,1,'Thermal Infrared (TIRS) 4',10.25,NULL,NULL,10.95,30,'13_TIR',39,'DTE',30,7,29);
---INSERT INTO "spectral_bands" VALUES('TR_ASTER','14',0,0,1,'Thermal Infrared (TIRS) 4',10.95,NULL,NULL,11.65,30,'14_TIR',39,'DTE',30,7,29);
+INSERT INTO "bands" VALUES('TR_ASTER','1',0,0,'SPECTRAL','Green',0.52,NULL,NULL,0.60,30,'01_VNIR',39,'DTE',30,7,29);
+INSERT INTO "bands" VALUES('TR_ASTER','2',1,0,'SPECTRAL','Red',0.63,NULL,NULL,0.69,30,'02_VNIR',39,'DTE',30,7,29);
+INSERT INTO "bands" VALUES('TR_ASTER','3',0,1,'SPECTRAL','Near Infrared (NIR) Nadir looking',0.76,NULL,NULL,0.86,30,'03N_VNIR',39,'DTE',30,7,29);
+INSERT INTO "bands" VALUES('TR_ASTER','4',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 1',1.6,NULL,NULL,1.7,30,'04_SWIR',39,'DTE',30,7,29);
+INSERT INTO "bands" VALUES('TR_ASTER','5',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 2',2.145,NULL,NULL,2.185,30,'05_SWIR',39,'DTE',30,7,29);
+INSERT INTO "bands" VALUES('TR_ASTER','6',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 3',2.185,NULL,NULL,2.225,30,'06_SWIR',39,'DTE',30,7,29);
+INSERT INTO "bands" VALUES('TR_ASTER','7',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 4',2.235,NULL,NULL,2.285,30,'07_SWIR',39,'DTE',30,7,29);
+INSERT INTO "bands" VALUES('TR_ASTER','8',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 5',2.295,NULL,NULL,2.365,30,'08_SWIR',39,'DTE',30,7,29);
+INSERT INTO "bands" VALUES('TR_ASTER','9',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 6',2.360,NULL,NULL,2.430,30,'09_SWIR',39,'DTE',30,7,29);
+--INSERT INTO "bands" VALUES('TR_ASTER','10',0,0,'THERMAL','Thermal Infrared (TIRS) 1',8.125,NULL,NULL,8.475,30,'10_TIR',39,'DTE',30,7,29);
+--INSERT INTO "bands" VALUES('TR_ASTER','11',0,0,'THERMAL','Thermal Infrared (TIRS) 2',8.475,NULL,NULL,8.825,30,'11_TIR',39,'DTE',30,7,29);
+--INSERT INTO "bands" VALUES('TR_ASTER','12',0,0,'THERMAL','Thermal Infrared (TIRS) 3',8.925,NULL,NULL,9.275,30,'12_TIR',39,'DTE',30,7,29);
+--INSERT INTO "bands" VALUES('TR_ASTER','13',0,0,'THERMAL','Thermal Infrared (TIRS) 4',10.25,NULL,NULL,10.95,30,'13_TIR',39,'DTE',30,7,29);
+--INSERT INTO "bands" VALUES('TR_ASTER','14',0,0,'THERMAL','Thermal Infrared (TIRS) 4',10.95,NULL,NULL,11.65,30,'14_TIR',39,'DTE',30,7,29);
 
-INSERT INTO "spectral_bands" VALUES('2A_MSI','1',0,0,0,'Coastal aerosol',0.4304,NULL,NULL,0.4574,60,'B01',23,'DTE',7,1,6);
-INSERT INTO "spectral_bands" VALUES('2A_MSI','2',0,0,0,'Blue',0.4476,NULL,NULL,0.5456,10,'B02',23,'DTE',7,1,6);
-INSERT INTO "spectral_bands" VALUES('2A_MSI','3',0,0,0,'Green',0.5375,NULL,NULL,0.5825,10,'B03',23,'DTE',7,1,6);
-INSERT INTO "spectral_bands" VALUES('2A_MSI','4',1,0,0,'Red',0.6455,NULL,NULL,0.6835,10,'B04',23,'DTE',7,1,6);
-INSERT INTO "spectral_bands" VALUES('2A_MSI','5',0,0,0,'Vegetation Red Edge 1',0.6944,NULL,NULL,0.7134,20,'B05',23,'DTE',7,1,6);
-INSERT INTO "spectral_bands" VALUES('2A_MSI','6',0,0,0,'Vegetation Red Edge 2',0.7312,NULL,NULL,0.7492,20,'B06',23,'DTE',7,1,6);
-INSERT INTO "spectral_bands" VALUES('2A_MSI','7',0,0,0,'Vegetation Red Edge 3',0.7685,NULL,NULL,0.7965,20,'B07',23,'DTE',7,1,6);
-INSERT INTO "spectral_bands" VALUES('2A_MSI','8',0,1,0,'Near Infrared (NIR)',0.7626,NULL,NULL,0.9076,10,'B08',23,'DTE',7,1,6);
-INSERT INTO "spectral_bands" VALUES('2A_MSI','8a',0,0,0,'Narrow Near Infrared (NIR)',0.8483,NULL,NULL,0.8813,20,'B8A',23,'DTE',7,1,6);
-INSERT INTO "spectral_bands" VALUES('2A_MSI','9',0,0,0,'Water vapour',0.932,NULL,NULL,0.958,60,'B09',23,'DTE',7,1,6);
---INSERT INTO "spectral_bands" VALUES('2A_MSI','10',0,0,0,'Shortwave Infrared (SWIR) Cirrus',1.336,NULL,NULL,1.411,60,'B10',23,'DTE',7,1,6);
---INSERT INTO "spectral_bands" VALUES('2A_MSI','11',0,0,0,'Shortwave Infrared (SWIR) 1',1.5422,NULL,NULL,1.6852,20,'B11',23,'DTE',7,1,6);
---INSERT INTO "spectral_bands" VALUES('2A_MSI','12',0,0,0,'Shortwave Infrared (SWIR) 2',2.0814,NULL,NULL,2.3234,20,'B12',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','1',0,0,'SPECTRAL','Coastal aerosol',0.4304,NULL,NULL,0.4574,60,'B01',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','2',0,0,'SPECTRAL','Blue',0.4476,NULL,NULL,0.5456,10,'B02',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','3',0,0,'SPECTRAL','Green',0.5375,NULL,NULL,0.5825,10,'B03',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','4',1,0,'SPECTRAL','Red',0.6455,NULL,NULL,0.6835,10,'B04',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','5',0,0,'SPECTRAL','Vegetation Red Edge 1',0.6944,NULL,NULL,0.7134,20,'B05',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','6',0,0,'SPECTRAL','Vegetation Red Edge 2',0.7312,NULL,NULL,0.7492,20,'B06',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','7',0,0,'SPECTRAL','Vegetation Red Edge 3',0.7685,NULL,NULL,0.7965,20,'B07',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','8',0,1,'SPECTRAL','Near Infrared (NIR)',0.7626,NULL,NULL,0.9076,10,'B08',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','8a',0,0,'SPECTRAL','Narrow Near Infrared (NIR)',0.8483,NULL,NULL,0.8813,20,'B8A',23,'DTE',7,1,6);
+INSERT INTO "bands" VALUES('2A_MSI','9',0,0,'SPECTRAL','Water vapour',0.932,NULL,NULL,0.958,60,'B09',23,'DTE',7,1,6);
+--INSERT INTO "bands" VALUES('2A_MSI','10',0,0,'SPECTRAL','Shortwave Infrared (SWIR) Cirrus',1.336,NULL,NULL,1.411,60,'B10',23,'DTE',7,1,6);
+--INSERT INTO "bands" VALUES('2A_MSI','11',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 1',1.5422,NULL,NULL,1.6852,20,'B11',23,'DTE',7,1,6);
+--INSERT INTO "bands" VALUES('2A_MSI','12',0,0,'SPECTRAL','Shortwave Infrared (SWIR) 2',2.0814,NULL,NULL,2.3234,20,'B12',23,'DTE',7,1,6);
 
-INSERT INTO "spectral_bands" VALUES('PV_VEG','1',0,0,0,'Blue',0.463,NULL,NULL,0.509,100,'BLUE',32,'DTE',14,0,13);
-INSERT INTO "spectral_bands" VALUES('PV_VEG','2',1,0,0,'Red',0.655,NULL,NULL,0.734,100,'RED',32,'DTE',14,0,13);
-INSERT INTO "spectral_bands" VALUES('PV_VEG','3',0,1,0,'Near Infrared (NIR)',0.845,NULL,NULL,0.989,100,'NIR',32,'DTE',14,0,13);
-INSERT INTO "spectral_bands" VALUES('PV_VEG','4',0,0,0,'Shortwave Infrared (SWIR)',1.6,NULL,NULL,1.673,100,'SWIR',32,'DTE',14,0,13);
+INSERT INTO "bands" VALUES('PV_VEG','1',0,0,'SPECTRAL','Blue',0.463,NULL,NULL,0.509,100,'BLUE',32,'DTE',14,0,13);
+INSERT INTO "bands" VALUES('PV_VEG','2',1,0,'SPECTRAL','Red',0.655,NULL,NULL,0.734,100,'RED',32,'DTE',14,0,13);
+INSERT INTO "bands" VALUES('PV_VEG','3',0,1,'SPECTRAL','Near Infrared (NIR)',0.845,NULL,NULL,0.989,100,'NIR',32,'DTE',14,0,13);
+INSERT INTO "bands" VALUES('PV_VEG','4',0,0,'SPECTRAL','Shortwave Infrared (SWIR)',1.6,NULL,NULL,1.673,100,'SWIR',32,'DTE',14,0,13);
 
-INSERT INTO "spectral_bands" VALUES('TR_MOD','3',0,0,0,'Blue',0.459,NULL,NULL,0.479,250,'blue_reflectance',55,'DOY',9,17,23);
-INSERT INTO "spectral_bands" VALUES('TR_MOD','1',1,0,0,'Red',0.620,NULL,NULL,0.670,60,'red_reflectance',55,'DOY',9,17,23);
-INSERT INTO "spectral_bands" VALUES('TR_MOD','2',0,1,0,'Near Infrared (NIR)',0.841,NULL,NULL,0.876,60,'NIR_reflectance',55,'DOY',9,17,23);
-INSERT INTO "spectral_bands" VALUES('TR_MOD','7',0,0,0,'Mid-Infrared (MIR)',2.105,NULL,NULL,2.155,60,'MIR_reflectance',55,'DOY',9,17,23);
+INSERT INTO "bands" VALUES('TR_MOD','3',0,0,'SPECTRAL','Blue',0.459,NULL,NULL,0.479,250,'blue_reflectance',55,'DOY',9,17,23);
+INSERT INTO "bands" VALUES('TR_MOD','1',1,0,'SPECTRAL','Red',0.620,NULL,NULL,0.670,60,'red_reflectance',55,'DOY',9,17,23);
+INSERT INTO "bands" VALUES('TR_MOD','2',0,1,'SPECTRAL','Near Infrared (NIR)',0.841,NULL,NULL,0.876,60,'NIR_reflectance',55,'DOY',9,17,23);
+INSERT INTO "bands" VALUES('TR_MOD','7',0,0,'SPECTRAL','Mid-Infrared (MIR)',2.105,NULL,NULL,2.155,60,'MIR_reflectance',55,'DOY',9,17,23);
 
-INSERT INTO "spectral_bands" VALUES('SP_VIIRS','3',0,0,0,'Blue',0.478,NULL,NULL,0.488,250,'blue',69,'DOY',18,26,32);
-INSERT INTO "spectral_bands" VALUES('SP_VIIRS','1',1,0,0,'Red',0.662,NULL,NULL,0.682,60,'NIR',69,'DOY',18,26,32);
-INSERT INTO "spectral_bands" VALUES('SP_VIIRS','2',0,1,0,'Near Infrared (NIR)',0.841,NULL,NULL,0.876,60,'red',69,'DOY',18,26,32);
-INSERT INTO "spectral_bands" VALUES('SP_VIIRS','7',0,0,0,'Mid-Infrared (MIR)',2.105,NULL,NULL,2.155,60,'MIR',69,'DOY',18,26,32);
+INSERT INTO "bands" VALUES('SP_VIIRS','3',0,0,'SPECTRAL','Blue',0.478,NULL,NULL,0.488,250,'blue',69,'DOY',18,26,32);
+INSERT INTO "bands" VALUES('SP_VIIRS','1',1,0,'SPECTRAL','Red',0.662,NULL,NULL,0.682,60,'NIR',69,'DOY',18,26,32);
+INSERT INTO "bands" VALUES('SP_VIIRS','2',0,1,'SPECTRAL','Near Infrared (NIR)',0.841,NULL,NULL,0.876,60,'red',69,'DOY',18,26,32);
+INSERT INTO "bands" VALUES('SP_VIIRS','7',0,0,'SPECTRAL','Mid-Infrared (MIR)',2.105,NULL,NULL,2.155,60,'MIR',69,'DOY',18,26,32);
 
 -------------------------------------------------------------------------------------------
 --------------------------------- Brazil Row/Path -----------------------------------------
