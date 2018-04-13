@@ -11,8 +11,9 @@ class Module:
 			setattr(self, key, config[key])
 
 		self.__setDefaultValues()
-		self.__initBus()
 		
+		self.worker_number = None
+		self.bus = loader.getAsyncConsumerPublisher(self.subcribe_channel, self.publish_channel)
 		utils.createDir(self.module_path)
 
 	def __setDefaultValues(self):
@@ -33,43 +34,32 @@ class Module:
 
 		self.number_of_workers = int(self.number_of_workers)
 		self.sleep_time = float(self.sleep_time)
-		self.publish_channel = self.publish_channel.capitalize()
 		self.debug_flag = int(self.debug_flag)
+		
+		if hasattr(self, 'publish_channel'):
+			self.publish_channel = self.publish_channel.capitalize()
+		else:
+			self.publish_channel = None
 
-	def __initBus(self):
-		self.bus = loader.getBus()
-		self.bus.subscribe(self.subcribe_channel)
+	def preProcess(self, message):
+		utils.log(self.id(), 'received message: ', message.get('id'))
+		try:
+			self.process(message);
+			return True
+		except Exception as e:
+			utils.log(self.id(), 'exception in message: ', message.get('id'))
+			utils.log(self.id(), traceback.format_exc())
+			return True
 
 	def run(self):
-		utils.log(self.name, 'started')
-		while True:
-			message = self.getMessage()
-			utils.log(self.name, 'Message received')
-			try:
-				result = self.process(message)
-			except:
-				traceback.print_exc()
-				pass
+		utils.log(self.id(), 'started')
+		self.bus.listen(self.preProcess)
+
+	def id(self):
+		return self.name + '-' + str(self.worker_number)
 
 	def publish(self, message):
 		if self.publish_channel is not None:
-			seriealizedMsg = message.serialize()
 			if self.debug_flag == 2:
-				utils.log(self.name, 'publish message: ', seriealizedMsg)
-			self.bus.publish(self.publish_channel, seriealizedMsg)
-		else:
-			print("Publish Channel is None")
-
-	def getMessage(self):
-		message = None
-		while True:
-			message = self.bus.getMessage()
-
-			if message is not None:
-				break	
-			#time.sleep(self.sleep_time)
-			
-		if self.debug_flag == 2:
-			utils.log(self.name, 'receive message: ', message)
-
-		return Message(message)
+				utils.log(self.id(), 'publish message: ', message.serialize())
+			self.bus.publish(message)

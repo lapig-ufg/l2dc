@@ -1,6 +1,6 @@
 import utils
 import os
-from _module import Module
+from ._module import Module
 from tools import arop_utils
 from tools import gdal_utils
 
@@ -10,83 +10,104 @@ class Arop(Module):
 		Module.__init__(self, config)
 
 	def process(self, message):
-		utils.log(self.name, 'Executing module')
+		utils.log(self.id(), 'Executing module')
 		images = message.get('images');
+		sensor = message.get('sensor');
 
 		outputDir = os.path.join(self.module_path, images[0]['sensor_id']);
+		utils.createDir(outputDir);
+		
+		ndviImage, baseWarpImages = self.separateImages(images)
+		
+		cloudMaskAroped = None
+		if message.hasKey('cloud_mask'):
+			baseWarpImages.append(message.get('cloud_mask'))
+			cloudMaskAroped = os.path.join(outputDir, utils.basename(message.get('cloud_mask')))
 
-		redImage, nirImage, baseWarpImage = self.separateImages(images)
+		if(ndviImage is not None and len(baseWarpImages) > 0):
+			
+			ndviFilepath = ndviImage['filepath'];
+			configFilepath = os.path.join(outputDir,utils.basename(ndviFilepath, 'conf'))
 
-		if(redImage is not None and nirImage is not None):
-			if redImage['sensor_id'] not in ['L8_OLI_T1','L7_ETM_T1']:
-					
-					ndviFilepath = os.path.join(outputDir, utils.newBasename(redImage['filename'], '_NDVI'));
-					baseNdviLandsat = os.path.join(self.ref_wrs_dir,'NDVI_'+redImage['wrs']['id']+".tif");
-					
-					utils.createDir(outputDir);
+			if not utils.fileExist(configFilepath):
+				baseNdviLandsat = os.path.join(self.ref_wrs_dir,'NDVI_'+ndviImage['wrs']['id']+".tif");
 
-					self.processNdvi(redImage, nirImage, ndviFilepath)
-					self.processArop(baseNdviLandsat, ndviFilepath, outputDir, baseWarpImage, redImage)
+				if sensor['id'] == 'L8_OLI_T1' or sensor['id'] == 'L7_ETM_T1' or sensor['id'] == 'L5_TM_T1':
+					self.adjustBounds(baseNdviLandsat, baseWarpImages, outputDir)
+				else:
 
-			else:
-				self.createImageSymLinks(images, outputDir);
+					resampleMethod = 'NN'
+					if images[0]['original_spatial_resolution'] <= 30:
+						resampleMethod = 'AGG'
+
+					fillValue = images[0]['nodata_value']
+					self.processArop(baseNdviLandsat, ndviFilepath, outputDir, baseWarpImages, ndviImage, configFilepath, fillValue, resampleMethod)
+
+				#if gdal_utils.isValid(cloudMaskAroped):
+				#	gdal_utils.convertDataType(cloudMaskAroped, 'Byte', 0)
+
+			elif self.debug_flag == 1:
+				utils.log(self.id(), configFilepath, ' and other arop files already exists.');
+
+			aropImages = []
 
 			for image in images:
 				outputFile = os.path.join(outputDir, image['filename']);
-				
-				if not gdal_utils.isValid(outputFile):
-					return
-				
-				image['fileinfo'] = gdal_utils.info(outputFile);
-				image['filepath'] = outputFile;
+				if utils.fileExist(outputFile):
+					
+					if not gdal_utils.isValid(outputFile):
+						utils.log(self.name, 'Invalid file ', outputFile)
+						return
+					
+					image['fileinfo'] = gdal_utils.info(outputFile);
+					image['filepath'] = outputFile;
 
-			self.publish(message);
+					aropImages.append(image)
+
+			message.set('images', aropImages)
+			
+			if gdal_utils.isValid(cloudMaskAroped):
+				message.set('cloud_mask', cloudMaskAroped)
+				
+			if len(aropImages) > 0:
+				self.publish(message);
 
 		else:
-			utils.log(self.name, images[0]['filename'], ' - RED or NIR bands doesn\'t exists.')
+			utils.log(self.id(), images[0]['filename'], ' - NDVI index don\'t exists.')
 
-	def processArop(self, baseNdviLandsat, ndviFilepath, outputDir, baseWarpImage, redImage):
-		aropRedFile = os.path.join(outputDir,redImage['filename']);
-		
-		if not utils.fileExist(aropRedFile):
-			configFilepath = arop_utils.generateConfig(baseNdviLandsat, ndviFilepath, outputDir, baseWarpImage);
-			arop_utils.registration(configFilepath, self.arop_path)
+	def adjustBounds(self, baseNdviLandsat, baseWarpImages, outputDir):
+		for imageFilepath in baseWarpImages:
+			outputFile = os.path.join(outputDir, utils.basename(imageFilepath));
+			gdal_utils.fitToBounds(imageFilepath, baseNdviLandsat, outputFile)
 
-		elif self.debug_flag == 1:
-			utils.log(self.name, aropRedFile, ' and other arop files already exists.');
+	def processArop(self, baseNdviLandsat, ndviFilepath, outputDir, baseWarpImages, baseImage, configFilepath, fillValue, resampleMethod):
 
-	def processNdvi(self, redImage, nirImage, ndviFilepath):
-		
-		if not utils.fileExist(ndviFilepath):
-			ndviInput = [redImage['filepath'], nirImage['filepath']];
-			expression = '({1}.astype(float) - {0}.astype(float))/({1}.astype(float) + {0}.astype(float))*100'
-			gdal_utils.calc(ndviInput, ndviFilepath, expression, 'Byte', -1)
+		outputImages = arop_utils.generateConfig(baseNdviLandsat, ndviFilepath, outputDir, baseWarpImages, 
+																		configFilepath, fillValue, resampleMethod)
 
-		elif self.debug_flag == 1:
-			utils.log(self.name, ndviFilepath, ' already exists.')
+		if self.debug_flag == 1:
+			utils.log(self.id(), 'Co-regiter using ', configFilepath)
+			
+		arop_utils.registration(configFilepath, self.arop_path)
+
+		for i in range(0, len(outputImages)):
+			binaryFile = outputImages[i]
+			geotiffFile = utils.newFilepathExtension(binaryFile, '.img', '.tif')
+
+			if gdal_utils.isValid(binaryFile):
+				gdal_utils.convertToGeotiff(binaryFile, geotiffFile)
+
+				utils.removeFile(binaryFile)
+				utils.removeFile(binaryFile+'.hdr')
 
 	def separateImages(self, images):
-		redImage = None
-		nirImage = None
-		baseWarpImage = []
+		ndviImage = None
+		baseWarpImages = []
 
 		for image in images:
-			if (image['is_red_band']):
-				redImage = image;
-			elif (image['is_nir_band']):
-				nirImage = image;
+			if (image['name'] == 'NDVI_Byte'):
+				ndviImage = image;
+			else:
+				baseWarpImages.append(image['filepath']);
 
-			baseWarpImage.append(image['filepath']);
-
-		return redImage, nirImage, baseWarpImage;
-
-	def createImageSymLinks(self, images, outputDir):
-		for image in images:
-			
-			outputFile = os.path.join(outputDir,image['filename']);
-			inputFile = image['filepath']
-
-			utils.createDir(outputDir);
-
-			if not utils.fileExist(outputFile):
-				utils.createSynLink(inputFile, outputFile);
+		return ndviImage, baseWarpImages;

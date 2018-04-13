@@ -1,6 +1,6 @@
 import utils
 import os
-from _module import Module
+from ._module import Module
 from tools import gdal_utils
 from tools import fmask_utils
 
@@ -31,8 +31,6 @@ class Toa(Module):
 				
 				filepathNobandNoExt = image['filename_noband_noext']
 				metadataFile = image['filepath_metadata']
-				
-				#print(image['type']);
 
 				if image['type'] == 'THERMAL':
 					thermalImages.append(image['filepath']);
@@ -51,7 +49,12 @@ class Toa(Module):
 				fmask_utils.lxAnglesImage(metadataFile, stackedFile, anglesFile)
 
 			if not utils.fileExist(toaFile):
+				if self.debug_flag == 1:
+					utils.log(self.name, 'Creating ', toaFile)
 				fmask_utils.lxTOA(metadataFile, stackedFile, anglesFile, toaFile)
+			elif self.debug_flag == 1:
+				utils.log(self.name, toaFile, ' already exists.')
+
 
 			if not utils.fileExist(outputFiles[0]):
 				gdal_utils.destack(toaFile,outputFiles);

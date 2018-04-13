@@ -1,6 +1,6 @@
 import utils
 import os
-from _module import Module
+from ._module import Module
 
 class Composite(Module):
 

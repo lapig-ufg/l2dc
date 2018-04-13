@@ -1,5 +1,5 @@
 import os
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 sitsPath, filename = os.path.split(os.path.abspath(__file__))
 

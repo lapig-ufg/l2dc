@@ -10,7 +10,8 @@ def main():
 	os.environ["PATH"] += os.pathsep + os.pathsep.join(config.getIntegrationsPath())
 
 	for module in loader.getModules():
-		for i in xrange(0, module.number_of_workers):
+		for i in range(0, module.number_of_workers):
+			module.worker_number = i
 			p = Process(target=module.run)
 			p.start()
 

@@ -1,10 +1,11 @@
 import os
 import glob
 import utils
+import uuid
 from tools import gdal_utils
 from datetime import datetime
-from _datasource import Datasource
 from communication import Message
+from ._datasource import Datasource
 
 class Raw(Datasource):
 
@@ -19,13 +20,21 @@ class Raw(Datasource):
 
 		for sensor in sensors:
 			images = self._getImagesBySensor(sensor);
+			cloudScreening = self._getCloudScreeningBySensor(sensor);
 			for key in images:
 				message = Message();
+				message.set('id', str(uuid.uuid4()));
 				message.set('images',images[key]);
 				message.set('sensor',sensor);
+				message.set('cloud_screening',cloudScreening);
 				meessages.append(message);
 
 		return meessages
+
+	def _getCloudScreeningBySensor(self, sensor):
+		sensorId = sensor['id'];
+
+		return self.db.getCloudScreening(sensorId)
 
 	def _getImagesBySensor(self, sensor):
 

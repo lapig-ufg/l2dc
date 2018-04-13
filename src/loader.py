@@ -2,14 +2,17 @@ import os
 import modules
 import datasources
 import config
-from communication import Bus
+from communication import SyncPublisher, AsyncConsumerPublisher
 from tools import Db
 import sqlite3
 
 instances = {}
 
-def getBus():
-	return Bus( config.getItems('sits', 'Bus') )
+def getAsyncConsumerPublisher(subcribe_channel, publish_channel = None, ):
+	return AsyncConsumerPublisher( config.getItems('sits', 'Bus'), subcribe_channel, publish_channel )
+
+def getSyncPublisher(publish_channel):
+	return SyncPublisher( config.getItems('sits', 'Bus'), publish_channel )
 
 def getDb():
 	return Db(config.getItems('sits', 'Db'))

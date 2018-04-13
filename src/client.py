@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import os
 import loader
 from datetime import datetime
 from sys import argv
@@ -33,12 +34,17 @@ def main():
 			,	"end": datetime.strptime(end, '%Y-%m-%d')
 		}
 
-		bus = loader.getBus()		
+		bus = loader.getSyncPublisher('Reproject')
 		datasource = loader.getDatasource(datasource,datasourceConfig)
 
-		datasource.generateMessages()
-		for message in datasource.generateMessages():
-			bus.publishMessage('Reproject', message)
+		#for message in datasource.generateMessages():
+		#	filename = 'msgs/client_201612/' + message.get('id') + '.json'
+		#	message.save(filename)
+			#bus.publish(message)
+
+		for path in os.listdir('msgs/client_201612/'):
+			fmsg = open('msgs/client_201612/'+path)
+			bus.publish(Message(fmsg.read()))
 					
 	else:
 		exit(usage)

@@ -4,11 +4,13 @@ from os import makedirs
 from os import remove
 from os import rename
 from os import symlink
+from os import devnull
 import shutil
 import string
 import datetime
 import pprint
 import ntpath
+import subprocess
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -24,7 +26,7 @@ def log(*arg):
 	msgList = [var for var in msgList if var]
 	msg = " ".join(msgList)
 
-	print "{dateStr} [{identifier}] {msg}".format(dateStr=dateStr, identifier=identifier, msg=msg)
+	print("{dateStr} [{identifier}] {msg}".format(dateStr=dateStr, identifier=identifier, msg=msg))
 
 def createDir(dirPath):
 	if not path.exists(dirPath):
@@ -44,13 +46,24 @@ def basename(filepath, ext = None):
 
 	return basename
 
+def basenameNoExt(filepath):
+	basename = ntpath.basename(filepath)
+	splited = path.splitext(basename);
+	basename = splited[0]
+
+	return basename
+
 def newBasename(filepath, suffix):
 	basename = ntpath.basename(filepath)
 	
 	splited = path.splitext(basename);
+
 	basename = splited[0] + suffix + splited[1]
 
 	return basename
+
+def newFilepathExtension(filepath, oldExt, newExt):
+	return filepath.replace(oldExt, newExt)
 
 def newFileReplacePattern(filepath, pattern, suffix):
 	splited = path.splitext(filepath);
@@ -58,11 +71,20 @@ def newFileReplacePattern(filepath, pattern, suffix):
 
 	return basename
 
+def copyFile(inputFilepath, outputFilepath):
+	shutil.copyfile(inputFilepath, outputFilepath)
+
 def createSynLink(inputFilepath, outputFilepath):
 	symlink(inputFilepath, outputFilepath)
 
 def removeDir(dirPath):
 	shutil.rmtree(dirPath)
+
+def removeFile(filepath):
+	try:
+		remove(filepath)
+	except:
+		pass
 
 def moveFile(originFilepath, destinationFilepath):
 	rename(originFilepath, destinationFilepath)
@@ -79,6 +101,15 @@ def number(strNumber):
 		return int(strNumber)
 	except ValueError:
 		return float(strNumber)
+
+def getDOY(dateStr, dateFormat='%Y-%m-%d'):
+	return datetime.datetime.strptime(dateStr,dateFormat).timetuple().tm_yday
+
+def getDate(dateStr, dateFormat='%Y-%m-%d'):
+	return datetime.datetime.strptime(dateStr,dateFormat)
+
+def getYear(dateStr, dateFormat='%Y-%m-%d'):
+	return datetime.datetime.strptime(dateStr,dateFormat).timetuple().tm_year
 
 def mapDict(argv, msg):
 	argd = { }

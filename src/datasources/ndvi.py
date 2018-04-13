@@ -1,15 +1,15 @@
 import json
-from _datasource import Datasource
+from ._datasource import Datasource
 
 class Ndvi(Datasource):
 
-    def __init__(self, db, config):
-      Datasource.__init__(self, db, config)
+		def __init__(self, db, config):
+			Datasource.__init__(self, db, config)
 
-    def generateMessages(self):
-    	return [];
+		def generateMessages(self):
+			return [];
 
-    def __getDates(self):
+		def __getDates(self):
 		
 			startDate = self.__convertDate(self.start)
 			endDate = self.__convertDate(self.end)
