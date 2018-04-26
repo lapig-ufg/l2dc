@@ -1,5 +1,5 @@
 from .raw import Raw
-from .ndvi import Ndvi
+from .monthly_composite import MonthlyComposite
 
-__all__ = ["raw","ndvi"]
+__all__ = ["Raw","MonthlyComposite"]
 

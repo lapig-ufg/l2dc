@@ -31,7 +31,7 @@ class Cloud(Module):
 
 		outputFile = self.getOutputFile(outputDir, cloudInputImage['filename_noband_noext'])
 		cloudValTh = cloudScreening['cloud_val_threshold']
-		nodataValue = 0
+		nodataValue = cloudInputImage['nodata_value']
 
 		if not utils.fileExist(outputFile):
 			if self.debug_flag == 1:
@@ -47,11 +47,13 @@ class Cloud(Module):
 
 			spectralImages = []
 
+			nodataValue = None
 			for image in sorted(images, key=lambda img: img['band_number']):
 				
 				filepathNobandNoExt = image['filename_noband_noext']
 				metadataFile = image['filepath_metadata']
 				spectralImages.append(image['filepath'])
+				nodataValue = image['nodata_value']
 
 			stackedFile = os.path.join(outputDir, filepathNobandNoExt + '.vrt')
 			anglesFile = os.path.join(outputDir, filepathNobandNoExt + 'angle.tif')
@@ -73,7 +75,7 @@ class Cloud(Module):
 				fmask_utils.s2Fmask(stackedFile, anglesFile, fmaskOutput)
 
 				expression = "logical_and({0}>=2, {0}<=3)"
-				gdal_utils.calc([fmaskOutput], outputFileFullResolution, expression, 'Int16', 0)
+				gdal_utils.calc([fmaskOutput], outputFileFullResolution, expression, 'Int16', nodataValue)
 				gdal_utils.resample(outputFileFullResolution, outputFile, 10) # BUGFUX: hardcode resolution
 				utils.removeFile(fmaskOutput)
 				utils.removeFile(outputFileFullResolution)

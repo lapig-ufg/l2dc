@@ -22,8 +22,7 @@ class Raw(Datasource):
 			images = self._getImagesBySensor(sensor);
 			cloudScreening = self._getCloudScreeningBySensor(sensor);
 			for key in images:
-				message = Message();
-				message.set('id', str(uuid.uuid4()));
+				message = Message.newEmptyMessage()
 				message.set('images',images[key]);
 				message.set('sensor',sensor);
 				message.set('cloud_screening',cloudScreening);

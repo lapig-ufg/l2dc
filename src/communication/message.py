@@ -1,3 +1,4 @@
+import uuid
 import json
 
 class Message:
@@ -27,3 +28,8 @@ class Message:
 		file = open(filename, 'w')
 		file.write(self.pretty())
 		file.close()
+
+	def newEmptyMessage():
+		message = Message();
+		message.set('id', str(uuid.uuid4()));
+		return message

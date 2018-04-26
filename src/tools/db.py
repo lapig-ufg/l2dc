@@ -26,7 +26,7 @@ class Db():
 					" VALUES " + \
 					"( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, GeomFromText(?,4326) )"
 
-		parameters = (
+		params = (
 			indexDict["sensor_id"],
 			indexDict["name"],
 			indexDict["utm_srid"],
@@ -50,7 +50,7 @@ class Db():
 			indexDict["footprint"]
 		)
 
-		self.cursor.execute(sql, parameters)
+		self.cursor.execute(sql, params)
 		self.conn.commit()
 
 	def intersectsWithWrs(self, wrsId, extent, sridNumber):
@@ -70,6 +70,21 @@ class Db():
 
 	def getBands(self, sensorId):
 		self.cursor.execute("SELECT * FROM bands WHERE sensor_id = ?",(sensorId,));
+		return self.cursor.fetchall();
+
+	def getSpectralIndexes(self, indexName, startDate, endDate, wrsId):
+
+		sql = "SELECT i.id, i.sensor_id, i.name, i.utm_srid, i.original_spatial_resolution," + \
+						" i.pixel_size, i.min_x, i.min_y, i.max_x, i.max_y, i.origin_x, i.origin_y, i.size_x," + \
+						" i.size_y, i.acquisition_year, i.acquisition_doy, i.acquisition_date, i.cover_area_km2," + \
+						" i.cloud_cover, i.img_filepath, i.cloud_filepath" + \
+					" FROM indexes i, wrs w" + \
+					" WHERE (name = ? AND acquisition_date >= ? AND acquisition_date <= ?)" + \
+						" AND (w.id = ? AND ST_INTERSECTS(w.Geometry, i.footprint))"
+
+		params = (indexName, startDate, endDate, wrsId)
+		self.cursor.execute(sql,params);
+
 		return self.cursor.fetchall();
 
 	def getCloudScreening(self, sensorId):

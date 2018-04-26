@@ -12,6 +12,8 @@ import pprint
 import ntpath
 import subprocess
 
+from tools import relativedelta
+
 pp = pprint.PrettyPrinter(indent=2)
 
 def pprint(stuff):
@@ -102,11 +104,26 @@ def number(strNumber):
 	except ValueError:
 		return float(strNumber)
 
+def newDateNextMonth(dateObj):
+	return dateObj + relativedelta.relativedelta(months=1)
+
+def newDateEndOfMonth(dateObj):
+	return dateObj + relativedelta.relativedelta(months=1, days=-1)
+
 def getDOY(dateStr, dateFormat='%Y-%m-%d'):
-	return datetime.datetime.strptime(dateStr,dateFormat).timetuple().tm_yday
+	try:
+		return datetime.datetime.strptime(dateStr,dateFormat).timetuple().tm_yday
+	except:
+		return dateStr.timetuple().tm_yday
+
+def dateString(dateObj, dateFormat='%Y-%m-%d'):
+	return dateObj.strftime(dateFormat)
 
 def getDate(dateStr, dateFormat='%Y-%m-%d'):
 	return datetime.datetime.strptime(dateStr,dateFormat)
+
+def copyDate(dateObj, dateFormat='%Y-%m-%d'):
+	return datetime.datetime.strptime(dateObj.strftime(dateFormat), dateFormat)
 
 def getYear(dateStr, dateFormat='%Y-%m-%d'):
 	return datetime.datetime.strptime(dateStr,dateFormat).timetuple().tm_year

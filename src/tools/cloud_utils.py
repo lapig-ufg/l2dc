@@ -6,6 +6,7 @@ import gdal
 import math
 import numpy
 from scipy import signal
+from . import gdal_utils
 
 circle_conv_10px_weights = [
 		[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -38,28 +39,6 @@ circle_conv_2px_weights = [
 	,	[0.0, 1.0, 1.0, 1.0, 0.0]
 	,	[0.0, 0.0, 1.0, 0.0, 0.0]
 ]
-
-def read_image(img_filename, band_number = 1):
-	imageDs = gdal.Open(img_filename, gdal.GA_ReadOnly)
-	data = imageDs.GetRasterBand(band_number).ReadAsArray(0,0,imageDs.RasterXSize,imageDs.RasterYSize)
-
-	return imageDs, data
-
-def write_image_output(out_filename, data, ref_image_ds):
-
-	originX, pixelWidth, _, originY, _, pixelHeight  = ref_image_ds.GetGeoTransform()
-	Xsize = ref_image_ds.RasterXSize 
-	YSize = ref_image_ds.RasterYSize
-
-	driver = gdal.GetDriverByName('GTiff')
-	outRaster = driver.Create(out_filename, Xsize, YSize, 1, gdal.GDT_Int16)
-	outRaster.SetGeoTransform((originX, pixelWidth, 0, originY, 0, pixelHeight))
-	outband = outRaster.GetRasterBand(1)
-	outband.WriteArray(data)
-	outRasterSRS = osr.SpatialReference()
-	outRasterSRS.ImportFromWkt(ref_image_ds.GetProjectionRef())
-	outRaster.SetProjection(outRasterSRS.ExportToWkt())
-	outband.FlushCache()
 
 def roll_without_reintroduced(data, x_shift, y_shift):
 	dataRolled = numpy.roll(data, shift=y_shift, axis=0)
@@ -115,8 +94,8 @@ def shadow_mask(nir_data, nir_radiance_th, cloud_mask, sun_azimuth_angle, sun_ze
 
 def rad_slice(blue_filepath, nir_filepath, output_filepath, blue_radiance_th, nir_radiance_th, mean_zenith, mean_azimuth, nodata_value):
 	
-	_, blue_data = read_image(blue_filepath)
-	nir_ds, nir_data = read_image(nir_filepath)
+	_, blue_data = gdal_utils.readImage(blue_filepath)
+	nir_ds, nir_data = gdal_utils.readImage(nir_filepath)
 	_, pixel_size, _, _, _, _  = nir_ds.GetGeoTransform()
 
 	cloud_data = cloud_mask(blue_data, blue_radiance_th)
@@ -125,4 +104,4 @@ def rad_slice(blue_filepath, nir_filepath, output_filepath, blue_radiance_th, ni
 
 	cloud_shadow_data = numpy.where(blue_data == nodata_value, nodata_value, cloud_shadow_data)
 
-	write_image_output(output_filepath, cloud_shadow_data, nir_ds)
+	gdal_utils.writeImage(output_filepath, cloud_shadow_data, nir_ds)

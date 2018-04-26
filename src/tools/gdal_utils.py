@@ -310,3 +310,26 @@ def __setCreationOption(command, prefix, output_format=DEFAULT_FORMAT, concat = 
 		else:
 			command += [ prefix, copt ]
 	
+def readImage(filepath, bandNumber = 1):
+	ds = gdal.Open(filepath, gdal.GA_ReadOnly)
+	data = ds.GetRasterBand(bandNumber).ReadAsArray(0,0,ds.RasterXSize,ds.RasterYSize)
+
+	return ds, data
+
+def writeImage(filepath, data, referenceDs, dataType = gdal.GDT_Int16, imageFormat = 'GTiff'):
+		
+	driver = gdal.GetDriverByName(imageFormat)
+
+	originX, pixelWidth, _, originY, _, pixelHeight  = referenceDs.GetGeoTransform()
+	xSize = referenceDs.RasterXSize 
+	ySize = referenceDs.RasterYSize
+	
+	outRasterSRS = osr.SpatialReference()
+	outRasterSRS.ImportFromWkt(referenceDs.GetProjectionRef())
+
+	outRaster = driver.Create(filepath, xSize, ySize, 1, dataType)
+	outRaster.SetGeoTransform((originX, pixelWidth, 0, originY, 0, pixelHeight))
+	outRaster.SetProjection(outRasterSRS.ExportToWkt())
+	outband = outRaster.GetRasterBand(1)
+	outband.WriteArray(data)
+	outband.FlushCache()

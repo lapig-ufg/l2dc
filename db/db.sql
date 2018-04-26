@@ -221,7 +221,7 @@ INSERT INTO "bands" VALUES('SP_VIIRS','07',0,0,'SPECTRAL',0,'Mid-Infrared (MIR)'
 INSERT INTO "cloud_screening"("sensor_id", "approach", "cloud_input_band", "cloud_val_threshold", "shadow_input_band", "shadow_val_threshold") VALUES('C4_MUX','RAD_SLICE','05',45,'08',35);
 INSERT INTO "cloud_screening"("sensor_id", "approach", "cloud_input_band", "cloud_val_threshold", "shadow_input_band", "shadow_val_threshold") VALUES('CB_HRCC','RAD_SLICE','01',45,'04',35);
 INSERT INTO "cloud_screening"("sensor_id", "approach", "cloud_input_band", "cloud_val_threshold", "shadow_input_band", "shadow_val_threshold") VALUES('C2_HRCC','RAD_SLICE','01',45,'04',35);
-INSERT INTO "cloud_screening"("sensor_id", "approach", "cloud_input_band", "cloud_val_threshold", "shadow_input_band", "shadow_val_threshold") VALUES('R2_LISS3','RAD_SLICE','02',45,'05',35);
+INSERT INTO "cloud_screening"("sensor_id", "approach", "cloud_input_band", "cloud_val_threshold", "shadow_input_band", "shadow_val_threshold") VALUES('R2_LISS3','RAD_SLICE','02',120,'05',80);
 INSERT INTO "cloud_screening"("sensor_id", "approach", "cloud_input_band", "cloud_val_threshold", "shadow_input_band", "shadow_val_threshold") VALUES('R1_LISS3','RAD_SLICE','02',120,'05',80);
 INSERT INTO "cloud_screening"("sensor_id", "approach", "cloud_input_band", "cloud_val_threshold", "shadow_input_band", "shadow_val_threshold") VALUES('TR_ASTER','RAD_SLICE','02',130,'03',70);
 -- INSERT INTO "cloud_screening"("sensor_id", "approach", "cloud_input_band", "cloud_val_threshold", "shadow_input_band", "shadow_val_threshold") VALUES('PV_VEG','RAD_SLICE','02',350,'04',400);
