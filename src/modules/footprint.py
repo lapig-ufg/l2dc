@@ -1,6 +1,6 @@
 import os
 import gdal
-import numpy
+import numpy as np
 import ogr
 import osr
 import utils
@@ -32,28 +32,22 @@ class Footprint(Module):
 		footprintDict['footprintWkt'] = footprintWkt
 		
 		if message.hasKey('cloud_mask'):
-			cloudMask  = message.get('cloud_mask')
-			cloudCover = self.getCloudCover(coverAreaKm2, cloudMask)
+			cloudCover = self.getCloudCover( message.get('cloud_mask') )
 			footprintDict['cloudCover'] = cloudCover
 
 		message.set('footprint', footprintDict)
 		self.publish(message);
 
-	def getCloudCover(self, coverArea, cloudMask):
-			
-		imageDs = gdal.Open(cloudMask,gdal.GA_ReadOnly)
-		Xsize = imageDs.RasterXSize 
-		YSize = imageDs.RasterYSize
+	def getCloudCover(self, cloudMask):
+		
+		_, cloudData = gdal_utils.readImage(cloudMask)
 
-		totalSum = 0
-		for x in range(Xsize):
-			data = imageDs.GetRasterBand(1).ReadAsArray(x,0,1,YSize);
-			data = numpy.where( data == 1, 1, 0)
-			totalSum = totalSum + numpy.sum(data);
+		validImage = (cloudData != -32765)
+		validImageXsize, validImageYSize = validImage.shape
 
-		cloudArea = (totalSum * 900) / 1000000
+		onlyGaps = np.logical_and((cloudData == 1), (cloudData != -32765))
 
-		return cloudArea / coverArea
+		return (np.sum(onlyGaps) / (validImageXsize * validImageXsize) * 100)
 
 	def getFootprint(self, baseImage, outputDir):
 		filepathNobandNoExt = baseImage['filename_noband_noext']

@@ -11,7 +11,7 @@ class CompleteNormalization(Module):
 		self.db = loader.getDb()
 
 	def process(self, message):
-		utils.log(self.name, 'Executing module Complete')
+		utils.log(self.id(), 'Executing module')
 
 		sensor = message.get('sensor')
 		images = message.get('images')
@@ -29,7 +29,7 @@ class CompleteNormalization(Module):
 			indexDict = {}
 
 			if self.debug_flag == 1:
-				utils.log(self.id(), 'DB Inserting  ', image['filepath'])
+				utils.log(self.id(), 'DB Inserting ', image['filepath'])
 
 			indexDict["sensor_id"] = image['sensor_id']
 			indexDict["name"] = image['name']
@@ -57,5 +57,10 @@ class CompleteNormalization(Module):
 			indexDict["footprint"] = footprint['footprintWkt']
 			
 			self.db.insertIndexes(indexDict)
+
+		if int(self.remove_tmp_images) == 1:
+			for tmpImage in message.get('tmpFilepaths'):
+				utils.log(self.id(), 'Removing', tmpImage)
+				utils.removeFile(tmpImage)
 
 		self.publish(message);

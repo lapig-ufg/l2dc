@@ -31,7 +31,7 @@ class Composite(Module):
 
 		self.nodataValue = -32765
 		self.backgroudSensorId = 'TR_MOD'
-		self.referenceSensors = ['L8_OLI_T1', 'L5_TM_T1', 'L7_ETM_T1']
+		self.referenceSensors = ['L8_OLI_T1', 'L5_TM_T1', 'L7_ETM_T1', 'PV_VEG', 'TR_MOD']
 
 		self.minFillPixelsPercentage = 1
 
@@ -68,6 +68,7 @@ class Composite(Module):
 				images[refSensor].pop(referenceImageIndex)
 				break
 
+		#print(refSensor, referenceImage)
 		if len(images[refSensor]) is 0:
 			del images[refSensor]
 
@@ -111,15 +112,16 @@ class Composite(Module):
 			_, imageData = gdal_utils.readImage(image['img_filepath'])
 			_, imageGaps = gdal_utils.readImage(image['cloud_filepath'])
 
-			dataMap = (imageGaps != self.nodataValue)
+			dataMap = (imageData != self.nodataValue)
 			if image['sensor_id'] != self.backgroudSensorId:
-				dataMap = np.logical_and((imageGaps == 0), dataMap)
+				dataMap = np.logical_and( np.logical_and((imageGaps == 0), (imageData != self.nodataValue)), dataMap)
 			
 			fillMap = np.logical_and(referenceGapIndexes, dataMap)
 
 			fillPixelCount = (fillMap[fillMap]).shape[0]
 			fillPixelPercentage = (fillPixelCount / referenceGapsTotalCount) * 100
 
+			print(fillPixelPercentage)
 			if fillPixelPercentage <= self.minFillPixelsPercentage:
 				continue;
 
@@ -129,7 +131,11 @@ class Composite(Module):
 				utils.log(self.id(), 'Approach:', str(fillPixelCount), "pixels", "("+str(round(fillPixelPercentage,4)) +"%", "reference gaps)")
 				utils.log(self.id(), 'Reference Gaps:', str(round(referenceGapsPercentage,2))+"%")
 
-			fillData = image['intercept'] + imageData[fillMap]*image['slope']
+			if image['r2Value'] == 0:
+				fillData = image['intercept'] + imageData[fillMap]*image['slope']
+			else:
+				fillData = imageData[fillMap]
+
 			referenceData[fillMap] = fillData
 			referenceGaps[fillMap] = 0
 
@@ -219,10 +225,13 @@ class Composite(Module):
 
 		stdDev3Mask = np.logical_and( (validImageData >= stdDev3Inferior), (validImageData <= stdDev3Superior) )
 
-		slope, intercept, rValue, _, _ = stats.linregress(validImageData[stdDev3Mask], validReferenceData[stdDev3Mask])
-		r2Value = rValue * rValue
+		try:
+			slope, intercept, rValue, _, _ = stats.linregress(validImageData[stdDev3Mask], validReferenceData[stdDev3Mask])
+			r2Value = rValue * rValue
 
-		return intercept, slope, r2Value
+			return intercept, slope, r2Value
+		except:
+			return None, None, 0
 
 	def process(self, message):
 		utils.log(self.name, 'Executing module Composite')

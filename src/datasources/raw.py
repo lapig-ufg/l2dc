@@ -19,6 +19,7 @@ class Raw(Datasource):
 		meessages = [];
 
 		for sensor in sensors:
+			print("Preparing " + sensor['id'] + " messages...")
 			images = self._getImagesBySensor(sensor);
 			cloudScreening = self._getCloudScreeningBySensor(sensor);
 			for key in images:

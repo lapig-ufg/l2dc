@@ -13,11 +13,12 @@ class Indexes(Module):
 		
 		sensor = message.get('sensor')
 		images = message.get('images');
+		tmpFilepaths = message.get('tmpFilepaths');
 
 		outputDir = os.path.join(self.module_path,sensor['id'])
 		utils.createDir(outputDir)
 
-		redImage, nirImage = self.separateImages(images)
+		redImage, nirImage, otherImages = self.separateImages(images)
 
 		if(redImage is not None and nirImage is not None):
 
@@ -25,6 +26,7 @@ class Indexes(Module):
 			ndviByteIndex = self.ndviByte(redImage, nirImage, outputDir)
 			indexesArray = [ndviIndex, ndviByteIndex]
 
+			message.set('tmpFilepaths', tmpFilepaths + otherImages)
 			message.set('images', self.createImagesDict(redImage, indexesArray) )
 
 			self.publish(message);
@@ -34,22 +36,26 @@ class Indexes(Module):
 
 
 	def separateImages(self, images):
+		
 		redImage = None
 		nirImage = None
+		otherImages = []
 
 		for image in images:
 			if (image['is_red_band']):
 				redImage = image;
 			elif (image['is_nir_band']):
 				nirImage = image;
+			else:
+				otherImages.append(image['filepath'])
 
-		return redImage, nirImage;
+		return redImage, nirImage, otherImages;
 
 	def ndviByte(self, redImage, nirImage, outputDir):
 		
 		ndviFilepath = os.path.join(outputDir, utils.newBasename(redImage['filename'], '_BNDVI'));
 
-		if not utils.fileExist(ndviFilepath):
+		if not gdal_utils.isValid(ndviFilepath):
 			if self.debug_flag == 1:
 				utils.log(self.id(), 'Creating ', ndviFilepath)
 			ndviInput = [redImage['filepath'], nirImage['filepath']];
@@ -65,7 +71,7 @@ class Indexes(Module):
 		
 		ndviFilepath = os.path.join(outputDir, utils.newBasename(redImage['filename'], '_NDVI'));
 
-		if not utils.fileExist(ndviFilepath):
+		if not gdal_utils.isValid(ndviFilepath):
 			if self.debug_flag == 1:
 				utils.log(self.id(), 'Creating ', ndviFilepath)
 			ndviInput = [redImage['filepath'], nirImage['filepath']];

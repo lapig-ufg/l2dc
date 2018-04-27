@@ -33,12 +33,12 @@ class Cloud(Module):
 		cloudValTh = cloudScreening['cloud_val_threshold']
 		nodataValue = cloudInputImage['nodata_value']
 
-		if not utils.fileExist(outputFile):
+		if not gdal_utils.isValid(outputFile):
 			if self.debug_flag == 1:
-				utils.log(self.name, 'Creating ', outputFile)
+				utils.log(self.id(), 'Creating ', outputFile)
 			gdal_utils.calc([cloudInputFile], outputFile, "{0} != "+str(cloudValTh), 'Int16', nodataValue)
 		elif self.debug_flag == 1:
-			utils.log(self.name, outputFile, ' already exists.')
+			utils.log(self.id(), outputFile, ' already exists.')
 
 		return outputFile
 
@@ -62,15 +62,15 @@ class Cloud(Module):
 			fmaskOutput = outputFile.replace('.tif','.img')
 			outputFileFullResolution = outputFile.replace('.tif','full.tif')
 
-			if not utils.fileExist(stackedFile):
+			if not gdal_utils.isValid(stackedFile):
 				gdal_utils.vrtStack(spectralImages, stackedFile)
 
-			if not utils.fileExist(anglesFile):
+			if not gdal_utils.isValid(anglesFile):
 				fmask_utils.s2AnglesImage(metadataFile, anglesFile)
 
-			if not utils.fileExist(outputFile):
+			if not gdal_utils.isValid(outputFile):
 				if self.debug_flag == 1:
-					utils.log(self.name, 'Creating ', outputFile)
+					utils.log(self.id(), 'Creating ', outputFile)
 				
 				fmask_utils.s2Fmask(stackedFile, anglesFile, fmaskOutput)
 
@@ -81,7 +81,7 @@ class Cloud(Module):
 				utils.removeFile(outputFileFullResolution)
 
 			elif self.debug_flag == 1:
-				utils.log(self.name, outputFile, ' already exists.')
+				utils.log(self.id(), outputFile, ' already exists.')
 
 			return outputFile
 
@@ -100,19 +100,19 @@ class Cloud(Module):
 
 			outputFile = self.getOutputFile(outputDir, cloudInputImage['filename_noband_noext'])
 
-			if not utils.fileExist(outputFile):
+			if not gdal_utils.isValid(outputFile):
 				if self.debug_flag == 1:
-					utils.log(self.name, 'Creating ', outputFile)
+					utils.log(self.id(), 'Creating ', outputFile)
 				cloud_utils.rad_slice(cloudInputFile, shadowInputFile, outputFile, cloudRadTh, shadowRadTh, meanSolarZenith, meanSolarAzimuth, nodataValue)
 			elif self.debug_flag == 1:
-				utils.log(self.name, outputFile, ' already exists.')
+				utils.log(self.id(), outputFile, ' already exists.')
 
 			return outputFile
 		else:
 			return None
 
 	def process(self, message):
-		utils.log(self.name, 'Executing module Cloud')
+		utils.log(self.id(), 'Executing module')
 
 		images = message.get('images')
 		sensor = message.get('sensor')
@@ -137,7 +137,7 @@ class Cloud(Module):
 				message.set('cloud_mask',outputFile)
 				self.publish(message)
 			else:
-				utils.log(self.name, 'Invalid file ', outputFile)
+				utils.log(self.id(), 'Invalid file ', outputFile)
 		
 		else:
 			self.publish(message)

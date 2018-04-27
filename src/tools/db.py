@@ -89,7 +89,6 @@ class Db():
 
 	def getCloudScreening(self, sensorId):
 		self.cursor.execute("SELECT * FROM cloud_screening WHERE sensor_id = ?",(sensorId,));
-		print(sensorId)
 		result = self.cursor.fetchall();
 		return result[0];
 

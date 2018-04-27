@@ -10,10 +10,11 @@ class Toa(Module):
 		Module.__init__(self, config)
 
 	def process(self, message):
-		utils.log(self.name, 'Executing module Toa')
+		utils.log(self.id(), 'Executing module')
 		
 		images = message.get('images');
 		sensor = message.get('sensor');
+		tmpFilepaths = message.get('tmpFilepaths');
 
 		thermalImages = [];
 		spectralImages = [];
@@ -42,30 +43,33 @@ class Toa(Module):
 			anglesFile = os.path.join(outputDir, filepathNobandNoExt + 'angle.tif');
 			toaFile = os.path.join(outputDir, filepathNobandNoExt + 'toa.tif');
 
-			if not utils.fileExist(stackedFile):
+			if not gdal_utils.isValid(stackedFile):
 				gdal_utils.vrtStack(spectralImages,stackedFile);
 			
-			if not utils.fileExist(anglesFile):
+			if not gdal_utils.isValid(anglesFile):
 				fmask_utils.lxAnglesImage(metadataFile, stackedFile, anglesFile)
 
-			if not utils.fileExist(toaFile):
+			if not gdal_utils.isValid(toaFile):
 				if self.debug_flag == 1:
-					utils.log(self.name, 'Creating ', toaFile)
+					utils.log(self.id(), 'Creating ', toaFile)
 				fmask_utils.lxTOA(metadataFile, stackedFile, anglesFile, toaFile)
 			elif self.debug_flag == 1:
-				utils.log(self.name, toaFile, ' already exists.')
+				utils.log(self.id(), toaFile, ' already exists.')
 
 
-			if not utils.fileExist(outputFiles[0]):
+			if not gdal_utils.isValid(outputFiles[0]):
 				gdal_utils.destack(toaFile,outputFiles);
 				utils.removeFileIfExist(toaFile);
 			
 			for image in images:
 				for outputFile in outputFiles:
 					if image['filename'] == utils.basename(outputFile):
+						tmpFilepaths.append(image['filepath'])
+						
 						image['fileinfo'] = gdal_utils.info(outputFile)
 						image['filepath'] = outputFile
 
+			message.set('tmpFilepaths', tmpFilepaths)
 			message.set('toa', { 
 				"noband_noext_filepath": filepathNobandNoExt,
 				"angles_filepath": anglesFile,

@@ -11,8 +11,10 @@ class Arop(Module):
 
 	def process(self, message):
 		utils.log(self.id(), 'Executing module')
+		
 		images = message.get('images');
 		sensor = message.get('sensor');
+		tmpFilepaths = message.get('tmpFilepaths');
 
 		outputDir = os.path.join(self.module_path, images[0]['sensor_id']);
 		utils.createDir(outputDir);
@@ -21,6 +23,7 @@ class Arop(Module):
 		
 		cloudMaskAroped = None
 		if message.hasKey('cloud_mask'):
+			tmpFilepaths.append(message.get('cloud_mask'))
 			baseWarpImages.append(message.get('cloud_mask'))
 			cloudMaskAroped = os.path.join(outputDir, utils.basename(message.get('cloud_mask')))
 
@@ -35,7 +38,6 @@ class Arop(Module):
 				if sensor['id'] == 'L8_OLI_T1' or sensor['id'] == 'L7_ETM_T1' or sensor['id'] == 'L5_TM_T1':
 					self.adjustBounds(baseNdviLandsat, baseWarpImages, outputDir)
 				else:
-
 					resampleMethod = 'NN'
 					if images[0]['original_spatial_resolution'] <= 30:
 						resampleMethod = 'AGG'
@@ -43,20 +45,20 @@ class Arop(Module):
 					fillValue = images[0]['nodata_value']
 					self.processArop(baseNdviLandsat, ndviFilepath, outputDir, baseWarpImages, ndviImage, configFilepath, fillValue, resampleMethod)
 
-				#if gdal_utils.isValid(cloudMaskAroped):
-				#	gdal_utils.convertDataType(cloudMaskAroped, 'Byte', 0)
-
 			elif self.debug_flag == 1:
 				utils.log(self.id(), configFilepath, ' and other arop files already exists.');
 
 			aropImages = []
 
 			for image in images:
+				
+				tmpFilepaths.append(image['filepath'])
 				outputFile = os.path.join(outputDir, image['filename']);
-				if utils.fileExist(outputFile):
+
+				if gdal_utils.isValid(outputFile):
 					
 					if not gdal_utils.isValid(outputFile):
-						utils.log(self.name, 'Invalid file ', outputFile)
+						utils.log(self.id(), 'Invalid file ', outputFile)
 						return
 					
 					image['fileinfo'] = gdal_utils.info(outputFile);
@@ -64,11 +66,12 @@ class Arop(Module):
 
 					aropImages.append(image)
 
-			message.set('images', aropImages)
-			
 			if gdal_utils.isValid(cloudMaskAroped):
 				message.set('cloud_mask', cloudMaskAroped)
 				
+			message.set('images', aropImages)
+			message.set('tmpFilepaths', tmpFilepaths)
+
 			if len(aropImages) > 0:
 				self.publish(message);
 
