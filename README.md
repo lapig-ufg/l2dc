@@ -9,7 +9,7 @@
 ## Running:
  1. Start Rabbitmqctl
  ```
- service rabbitmq-server start
+ systemctl start rabbitmq-server
  ```
  2. Start Server
  ```
