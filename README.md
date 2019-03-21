@@ -17,5 +17,5 @@
  ```
  3. Send the messages of images processing
  ```
- python -u client.py -d raw -r 223071 -s 2016-12-01 -e 2016-12-31
+ python -u client.py -d Raw -r 223071 -s 2016-12-01 -e 2016-12-31
  ```
