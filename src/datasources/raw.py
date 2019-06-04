@@ -19,7 +19,7 @@ class Raw(Datasource):
 		meessages = [];
 
 		for sensor in sensors:
-			print("Preparing " + sensor['id'] + " messages...")
+			utils.log("Raw", "Preparing", sensor['id'], "messages...")
 			images = self._getImagesBySensor(sensor);
 			cloudScreening = self._getCloudScreeningBySensor(sensor);
 			for key in images:
@@ -72,40 +72,43 @@ class Raw(Datasource):
 					
 					if self.start <= bandDate <= self.end:
 						
-						fileInfo = gdal_utils.info(bandFile)
-						sridNumber = fileInfo['srid'].split(':')[1];
-						intersects = self.db.intersectsWithWrs(self.rowPath, fileInfo['extent'], sridNumber)
+						try:
+							fileInfo = gdal_utils.info(bandFile)
+							sridNumber = fileInfo['srid'].split(':')[1];
+							intersects = self.db.intersectsWithWrs(self.rowPath, fileInfo['extent'], sridNumber)
 
-						if intersects:
-							
-							wrs = self.db.getWrs(self.rowPath)
+							if intersects:
+								
+								wrs = self.db.getWrs(self.rowPath)
 
-							dateStd = bandDate.strftime('%Y-%m-%d');
-							key = overpass + "_" + dateStd;
-							
-							bandCopy = band.copy();
-							bandCopy['aquisition_date'] = dateStd;
-							bandCopy['overpass_id'] = overpass;
-							bandCopy['filename'] = utils.basename(bandFile);
-							bandCopy['filename_noband_noext'] = self._getMetadataFile(bandPatrn, utils.basename(bandFile), '');
-							bandCopy['filepath'] = bandFile;
-							bandCopy['filepath_metadata'] = self._getMetadataFile(bandPatrn, bandFile, metadataSuffix);
-							bandCopy['fileinfo'] = fileInfo;
-							bandCopy['wrs'] = wrs.copy();
+								dateStd = bandDate.strftime('%Y-%m-%d');
+								key = overpass + "_" + dateStd;
+								
+								bandCopy = band.copy();
+								bandCopy['aquisition_date'] = dateStd;
+								bandCopy['overpass_id'] = overpass;
+								bandCopy['filename'] = utils.basename(bandFile);
+								bandCopy['filename_noband_noext'] = self._getMetadataFile(bandPatrn, utils.basename(bandFile), '');
+								bandCopy['filepath'] = bandFile;
+								bandCopy['filepath_metadata'] = self._getMetadataFile(bandPatrn, bandFile, metadataSuffix);
+								bandCopy['fileinfo'] = fileInfo;
+								bandCopy['wrs'] = wrs.copy();
 
-							bandCopy['wrs']['utm_srid'] = 'EPSG:' + str(bandCopy['wrs']['utm_srid']);
+								bandCopy['wrs']['utm_srid'] = 'EPSG:' + str(bandCopy['wrs']['utm_srid']);
 
-							bandCopy.pop('fn_pattern_band_name',None)
-							bandCopy.pop('fn_pattern_band_start_pos',None)
-							bandCopy.pop('fn_pattern_date_start_pos',None)
-							bandCopy.pop('fn_pattern_date_type',None)
-							bandCopy.pop('fn_pattern_overpass_id_end',None)
-							bandCopy.pop('fn_pattern_overpass_id_start',None)
+								bandCopy.pop('fn_pattern_band_name',None)
+								bandCopy.pop('fn_pattern_band_start_pos',None)
+								bandCopy.pop('fn_pattern_date_start_pos',None)
+								bandCopy.pop('fn_pattern_date_type',None)
+								bandCopy.pop('fn_pattern_overpass_id_end',None)
+								bandCopy.pop('fn_pattern_overpass_id_start',None)
 
-							if not key in bandsMap:
-								bandsMap[key] = [];
+								if not key in bandsMap:
+									bandsMap[key] = [];
 
-							bandsMap[key].append(bandCopy);
+								bandsMap[key].append(bandCopy);
+						except:
+							utils.log("Raw", "Problem in file", bandFile)
 
 		return bandsMap;
 
