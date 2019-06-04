@@ -22,4 +22,3 @@
  4. Send the messages of images processing to MonthlyComposite datasource
  ```
  python3 -u client.py -d MonthlyComposite -r 223071 -s 2016-12-01 -e 2016-12-31 -i NDVI
- 
